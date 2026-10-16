@@ -97,8 +97,8 @@ const GAMES=[
 {n:'Postcard Pilot',d:'Oceans, climates and clues',t:'quiz',b:'pilot',h:260},
 {n:'Treasure Map',d:'Directions and compass riddles',t:'quiz',b:'map',h:55},
 {n:'Crazy Quiz Show',d:'Aden vs Mia buzzer battle!',t:'quiz',b:'show',two:1,n10:1,h:310}];
-let prog={};try{prog=JSON.parse(localStorage.getItem('acc')||'{}')}catch(e){}
-const save=()=>{try{localStorage.setItem('acc',JSON.stringify(prog))}catch(e){}fileSave()};
+let prog={};try{prog=JSON.parse(localStorage.getItem('crazy-continents')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('crazy-continents',JSON.stringify(prog))}catch(e){}fileSave()};
 const open=i=>UNLOCK_ALL||(i==0?prog.learn:prog['g'+(i-1)]>0);
 const sh=a=>a.map(v=>[R(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
 const LOCK='<svg class="lk" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="12" rx="3" fill="#ffd25e"/><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="#fff" stroke-width="2.5"/></svg>';
@@ -141,7 +141,7 @@ function drawCompass(tm){if(!CMP)return;const p=pr(L0,90),x=G.x,y=G.y;X.save();X
  X.fillStyle='#ffd25e';X.beginPath();X.arc(0,0,R*.07,0,7);X.fill();X.restore()}
 // auto-save: progress is always kept in the browser; on Chrome/Edge desktop it can also be written to a file that is replaced on every save
 let FH=null,NP=0,SM='';const FT={types:[{description:'Progress file',accept:{'application/json':['.json']}}]};
-const idb=(m,v)=>new Promise(r=>{try{const q=indexedDB.open('acc',1);q.onupgradeneeded=()=>q.result.createObjectStore('k');q.onsuccess=()=>{const s=q.result.transaction('k',m=='get'?'readonly':'readwrite').objectStore('k'),x=m=='get'?s.get('fh'):s.put(v,'fh');x.onsuccess=()=>r(x.result);x.onerror=()=>r(null)};q.onerror=()=>r(null)}catch(e){r(null)}});
+const idb=(m,v)=>new Promise(r=>{try{const q=indexedDB.open('crazy-continents',1);q.onupgradeneeded=()=>q.result.createObjectStore('k');q.onsuccess=()=>{const s=q.result.transaction('k',m=='get'?'readonly':'readwrite').objectStore('k'),x=m=='get'?s.get('fh'):s.put(v,'fh');x.onsuccess=()=>r(x.result);x.onerror=()=>r(null)};q.onerror=()=>r(null)}catch(e){r(null)}});
 idb('get').then(h=>{if(h)FH=h});
 async function fileSave(){if(!FH)return;try{const w=await FH.createWritable();await w.write(JSON.stringify({app:'crazy-continents',prog,saved:new Date().toISOString()}));await w.close();NP=0}catch(e){NP=1}}
 async function svOn(){try{FH=await showSaveFilePicker({suggestedName:'crazy-continents-progress.json',...FT});await idb('set',FH);await fileSave();SM=NP?'Could not write the file.':'Auto-save is on!'}catch(e){}svMenu()}
