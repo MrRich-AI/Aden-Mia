@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Epic Elements of the Periodic Table</title>
+<title>Terminal Periodic Table Explorer</title>
 <style>
 :root{color-scheme:dark;--solid:#06160a;--a-solid:#33ff66;--liquid:#1a1200;--a-liquid:#ffb000;--gas:#00161a;--a-gas:#33e0ff;--unk:#0a0a0a;--a-unk:#4d5a4d;--g:#7dff9a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%}
@@ -55,7 +55,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pic{flex:1;display:grid;place-items:center;margin:8px 8px 4px;border:1.5px dashed #33ff6666;text-align:center;font-size:12px;opacity:.85;cursor:pointer;overflow:hidden;min-height:56px;min-width:0}
 .pic img{width:100%;height:100%;object-fit:contain}
 #pc{width:100%;height:100%;display:grid;place-items:center;min-height:0}
-.sf{width:1.5em;height:1.5em;vertical-align:middle;overflow:visible}
+.sf{width:.9em;height:.9em;vertical-align:middle;overflow:visible}
 .sf.r{animation:pl 2.6s ease-in-out infinite}
 @keyframes pl{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.6}}
 @media (prefers-reduced-motion:reduce){.sf.r{animation:none}}
@@ -77,9 +77,19 @@ header b{font-size:clamp(12px,3.8vw,18px);letter-spacing:.03em}
 .cell.fade{opacity:.12;pointer-events:none}
 .cell.star{box-shadow:0 0 14px #ffd23f;outline:2px solid #ffd23f;outline-offset:1px}
 .cell.star::after{content:"★";position:absolute;top:2px;right:4px;color:#ffd23f;font-size:15px;line-height:1}
+@media (min-aspect-ratio:5/4){
+.q{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lp{grid-area:1/1/3/2;border-bottom:0}
+#ll{grid-area:1/2/3/3}
+#u{grid-area:1/3/2/4}
+#lr{grid-area:2/3/3/4}
+#sent{grid-column:3;grid-row:1/3}
+.pic{flex:0 0 30%}
+#info{flex:1 1 auto;max-height:none;font-size:clamp(14px,3.3cqh,22px)}
+}
 </style></head>
 <body>
-<header><b>Epic Elements of the Periodic Table</b><div><button id="zo" aria-label="Zoom out">−</button> <button id="zi" aria-label="Zoom in">+</button> <button id="fit">FIT</button></div></header>
+<header><b>Periodic Table of Elements</b><div><button id="zo" aria-label="Zoom out">−</button> <button id="zi" aria-label="Zoom in">+</button> <button id="fit">FIT</button></div></header>
 <nav id="fam" class="chips" aria-label="Kid-friendly families"></nav><nav id="sci" class="chips" aria-label="Scientific families" hidden></nav>
 <section id="desc" hidden><div class="dh"><b id="dt"></b><button id="dx" aria-label="Clear family">✕</button></div><div id="ds"></div><p id="dp"></p><div id="gm">Game selection goes here</div></section>
 <div id="vp"><canvas id="bg"></canvas><div id="tbl"></div><div id="hint">scroll / pinch = zoom · drag = pan · double-click an element</div></div>
@@ -152,75 +162,75 @@ const ER=['Everywhere','Common','Uncommon','Rare','Super rare','Lab-made'],UR=['
 const INFO=`1 0 y|Water and stars; rocket fuel|Lightest thing there is
 4 0 g|Balloons; found in the Sun and natural gas|Makes your voice squeaky
 2 3 y|Phone batteries; found in salty lakes|Floats on water
-3 3 r|Space telescopes; found in gems like emeralds|Gives emeralds their green
+3 3 r|Space telescopes; found in gems like emeralds|Very light, yet stiff and strong
 2 3 g|Glass and soap; found in the mineral borax|Helps plants grow
-1 1 g|Pencils, diamonds, all living things|Diamonds and pencil lead are both carbon
-2 1 g|Plant food; most of the air around you|Most of the air you breathe
+1 1 g|Pencils, diamonds, all living things|Burnt toast turns black from carbon
+2 1 g|Plant food; most of the air around you|Liquid nitrogen is cold enough to freeze flowers solid
 0 1 g|Breathing; found in air and water|Half of Earth’s crust is oxygen
 1 3 r|Toothpaste; found in rocks and minerals|Most reactive element
-4 1 g|Bright glowing signs; a tiny bit in the air|Glows red-orange
+4 1 g|Bright glowing signs; a tiny bit in the air|It never joins up with other elements
 0 2 y|Table salt; found in the ocean|Fizzes wildly in water
-0 1 g|Fireworks; found in rocks and seawater|Burns super bright
+0 1 g|Fireworks; found in rocks and seawater|Plants need it to make their green color
 0 2 g|Cans and foil; found in clay and soil|Once pricier than gold
-0 1 g|Computer chips; found in sand and rocks|Sand is mostly silicon
-1 3 y|Matches and plant food; found in bones and rocks|In your bones
+0 1 g|Computer chips; found in sand and rocks|Silicon Valley is named after it
+1 3 y|Matches and plant food; found in bones and rocks|One form glows in the dark
 1 1 g|Matches and rubber; found near volcanoes|Smells like rotten eggs in some forms
-1 3 r|Pools and clean water; found in salt and seawater|Kills germs
-2 2 g|Light bulbs; found in the air|Third most common gas in air
-0 3 y|Plant food; found in bananas and rocks|Bananas are full of it
-0 2 g|Strong bones; found in milk, shells and chalk|Seashells are calcium
-1 3 g|Sports gear; found in a few rare rocks|Named for Scandinavia
+1 3 r|Pools and clean water; found in salt and seawater|It was first used to bleach cloth white
+2 2 g|Light bulbs; found in the air|It never reacts, so it stops things from rusting
+0 3 y|Plant food; found in bananas and rocks|Your heartbeat depends on it
+0 2 g|Strong bones; found in milk, shells and chalk|Adults have about 2 pounds of it
+1 3 g|Sports gear; found in a few rare rocks|Helps make stadium lights extra bright
 1 3 g|Bike frames and hip implants; found in sand and rocks|Strong as steel, much lighter
-1 3 y|Strong tools; found in some rocks and soil|Named for a goddess
-1 3 y|Shiny car parts; found in rocks and rubies|Makes rubies red
+1 3 y|Strong tools; found in some rocks and soil|Some sea animals collect it in their blood
+1 3 y|Shiny car parts; found in rocks and rubies|Makes stainless steel stainless
 1 3 y|Making steel; found in rocks and the sea floor|Tiny bit in your body
 0 1 g|Buildings and cars; found in rocks and your blood|Earth’s core is mostly iron
-2 3 y|Blue paint and batteries; found in some rocks|Makes blue glass
-1 3 y|Coins; found deep in the Earth|The 5¢ coin is named for it
+2 3 y|Blue paint and batteries; found in some rocks|One of only a few metals a magnet sticks to
+1 3 y|Coins; found deep in the Earth|Many meteorites are part nickel
 2 3 g|Wires and pennies; found in rocks|Statue of Liberty turned green
 1 3 g|Roofs and vitamins; found in rocks|Helps wounds heal
 2 3 g|Phone chips; found in tiny amounts in rocks|Melts in your hand
-2 3 g|Fiber optic cables; found in a few rocks|Named for Germany
-2 3 r|Old pesticides; found in some rocks|Famous old poison
-3 3 y|Solar panels; found in soil and some foods|Named for the Moon
+2 3 g|Fiber optic cables; found in a few rocks|Helps cameras see heat
+2 3 r|Old pesticides; found in some rocks|Old green wallpaper was made with it
+3 3 y|Solar panels; found in soil and some foods|Some dandruff shampoos have it
 2 3 r|Fire safety; found in seawater|Liquid at room temperature
 4 3 g|Lasers and lights; a tiny bit in the air|Sounds like Superman’s Kryptonite
 2 3 y|Science tools; found in rocks|Makes red-purple flames
-1 3 y|Red fireworks; found in rocks and seawater|Makes fireworks red
+1 3 y|Red fireworks; found in rocks and seawater|Old TV screens used it to block X-rays
 1 3 g|TV screens; found in a few rocks|Four elements share its town name
-1 3 g|Fake diamonds; found in sand and rocks|Cubic zirconia is a fake gem
-2 4 g|Jet engines; found in a few rocks|Named for a Greek queen
-2 4 g|Tough steel; found in rocks|Once mistaken for lead
+1 3 g|Fake diamonds; found in sand and rocks|It doesn’t rust, so power plants use it
+2 4 g|Jet engines; found in a few rocks|Helps make super-strong magnets for MRI scanners
+2 4 g|Tough steel; found in rocks|Your body needs a tiny bit of it
 5 5 r|Doctor scans; made in labs|First lab-made element
-4 4 g|Pen tips; found in rare rocks|Named for Russia
+4 4 g|Pen tips; found in rare rocks|Helps computer hard drives store more
 4 4 g|Car parts; found in rare rocks|Costs more than gold
-4 4 g|Car exhaust filters; found in rare rocks|Named for an asteroid
+4 4 g|Car exhaust filters; found in rare rocks|Soaks up hydrogen like a sponge
 3 4 g|Jewelry and forks; found in rocks|Best at carrying electricity
 3 4 r|Old batteries; found in rocks with zinc|Soft enough to cut with a knife
-3 4 g|Touch screens; found in rocks with zinc|Named for a color
+3 4 g|Touch screens; found in rocks with zinc|So soft you can dent it with a fingernail
 2 4 g|Food cans; found in rocks|Bent tin crackles
 3 4 y|Batteries; found in rocks|Used in ancient eye makeup
-4 4 y|Solar panels; found in rare rocks|Named for Earth
+4 4 y|Solar panels; found in rare rocks|Rarer than gold in Earth’s crust
 2 4 y|Iodized salt; found in seaweed and the sea|Makes purple gas
 4 4 g|Car headlights; a tiny bit in the air|Glows blue-purple
 2 4 y|Atomic clocks; found in rare rocks|Melts near room temperature
 1 4 y|X-ray drinks; found in rocks|Makes green fireworks
-1 4 g|Camera lenses; found in rocks|Hid among other elements
-1 4 g|Lighter sparks; found in rocks|Sparks when scratched
+1 4 g|Camera lenses; found in rocks|Soft enough to cut with a knife
+1 4 g|Lighter sparks; found in rocks|The most plentiful of the rare earths
 2 4 g|Welding goggles; found in rocks|Makes green glass
 1 4 g|Strong magnets; found in rocks|In headphone magnets
-5 5 r|Glow paint; almost never found in nature|Almost none in nature
-2 4 g|Magnets; found in rocks|Named for a mine official
-3 4 g|Euro bills; found in rocks|Makes bills glow under UV light
-2 4 g|Body scans; found in rocks|Named for a scientist
-3 4 g|Green screens; found in rocks|Named for a Swedish town
-2 4 g|Magnets; found in rocks|Hard to find
-3 4 g|Lasers; found in rocks|Named for Stockholm
-2 4 g|Internet cables; found in rocks|Named for a Swedish town
+5 5 r|Glow paint; almost never found in nature|Some space gear used it for power
+2 4 g|Magnets; found in rocks|Used in some cancer treatments
+3 4 g|Euro bills; found in rocks|Makes the red color in old TV screens
+2 4 g|Body scans; found in rocks|It gets magnetic when it is cooled down
+3 4 g|Green screens; found in rocks|Helps ships’ sonar make sound
+2 4 g|Magnets; found in rocks|Helps magnets work in hot places
+3 4 g|Lasers; found in rocks|Strongest magnetic power of any element
+2 4 g|Internet cables; found in rocks|Gives some glass a pink color
 3 4 g|Portable X-rays; found in rocks|Rarest of its group
-2 4 g|Atomic clocks; found in rocks|Named for a Swedish town
-3 4 g|Medical scans; found in rocks|Named for Paris
-2 4 g|Computer chips; found in rocks with zirconium|Named for Copenhagen
+2 4 g|Atomic clocks; found in rocks|Used in some lasers that cut metal
+3 4 g|Medical scans; found in rocks|The heaviest and hardest of the rare earths
+2 4 g|Computer chips; found in rocks with zirconium|Helps keep power plants safe
 2 4 g|Phone parts; found in rocks|Safe for hip implants
 2 4 g|Light bulb wires; found in rocks|Highest melting point of any metal
 4 4 g|Jet engines; found in rocks|Last stable element found
@@ -232,38 +242,38 @@ const INFO=`1 0 y|Water and stars; rocket fuel|Lightest thing there is
 3 4 r|Old rat poison; found in rocks|Burns with a green flame
 2 4 r|Old pipes and paint; found in rocks|Pencil lead is not lead
 3 4 g|Stomach medicine; found in rocks|Makes rainbow crystals
-4 5 r|Static brushes; found in tiny amounts in rocks|Found by Marie Curie
+4 5 r|Static brushes; found in tiny amounts in rocks|So radioactive it makes things glow blue
 4 5 r|Science only; seen for just seconds|Rarest natural element
-4 5 r|Science only; seeps out of rocks into basements|Radioactive gas from rocks
+4 5 r|Science only; seeps out of rocks into basements|The heaviest gas that exists
 4 5 r|Science only; made in labs|Vanishes in minutes
-4 5 r|Old glow paint; found in tiny amounts in rocks|Glows in the dark
+4 5 r|Old glow paint; found in tiny amounts in rocks|Marie Curie’s notebooks are still radioactive
 4 5 r|Science only; found in uranium rocks|Glows blue
-2 4 r|Old lantern mantles; found in rocks and sand|Named for Thor
+2 4 r|Old lantern mantles; found in rocks and sand|Could power future nuclear plants
 4 5 r|Science only; found in uranium rocks|Super rare
-2 4 r|Power plants; found in rocks|Powers whole cities
+2 4 r|Power plants; found in rocks|One tiny pellet holds as much energy as a ton of coal
 4 5 r|Science only; made in labs|First past uranium
-4 5 r|Space probe power; made in labs|Powers space probes
-5 5 r|Smoke alarms; made in labs|Inside many smoke alarms
-5 5 r|Space rover tools; made in labs|Named for the Curies
-5 5 r|Science only; made in labs|Named for a California city
-5 5 r|Science only; made in labs|Named for a state
+4 5 r|Space probe power; made in labs|Voyager spacecraft carry it and are still flying
+5 5 r|Smoke alarms; made in labs|Only a tiny speck is needed
+5 5 r|Space rover tools; made in labs|Glows purple in the dark
+5 5 r|Science only; made in labs|Less than 1 gram has ever been made
+5 5 r|Science only; made in labs|Gives off lots of tiny particles called neutrons
 5 5 r|Science only; made in labs|Found in bomb test dust
-5 5 r|Science only; made in labs|Found in bomb test dust
-5 5 r|Science only; made in labs|Named for the table’s inventor
-5 5 r|Science only; made in labs|Named for the Nobel Prize founder
-5 5 r|Science only; made in labs|Named for the atom smasher inventor
-5 5 r|Science only; made in labs|Lasts only seconds
-5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Heaviest element made by hitting atoms with neutrons
+5 5 r|Science only; made in labs|Made one atom at a time
+5 5 r|Science only; made in labs|Lasts less than an hour
+5 5 r|Science only; made in labs|The last of the actinide row
+5 5 r|Science only; made in labs|First element past the actinides
+5 5 r|Science only; made in labs|Made by two labs at the same time
 5 5 r|Science only; made in labs|Named while he was alive
-5 5 r|Science only; made in labs|Lasts only seconds
-5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Only a few atoms seen at a time
+5 5 r|Science only; made in labs|Expected to be very dense like osmium
 5 5 r|Science only; made in labs|Named for a famous woman scientist
-5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Some forms last less than a second
 5 5 r|Science only; made in labs|Named for the X-ray discoverer
 5 5 r|Science only; made in labs|Named for a famous astronomer
 5 5 r|Science only; made in labs|First element named in Asia
-5 5 r|Science only; made in labs|Lasts only seconds
-5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Scientists think it may act like a gas
+5 5 r|Science only; made in labs|Made by hitting americium with calcium
 5 5 r|Science only; made in labs|Made in a California lab
 5 5 r|Science only; made in labs|Made with help from Tennessee
 5 5 r|Science only; made in labs|Heaviest element known`.split('\n').map(l=>{const[a,b,d]=l.split('|'),[e,u,sf]=a.split(' ');return{e:+e,u:+u,s:sf,b,d}});
@@ -422,24 +432,25 @@ bx.globalAlpha=.4;
 if(a.k=='b')atomBohr(bx,a.x,a.y,a.R,a.s,a.z,t+a.z*900,a.fl,a.c,a.d,false);
 else{if(t-a.lt>200){a.g++;sampleQ(a.s,a.P,a.g);prune(a.P,a.g,24);a.lt=t}atomQ(bx,a.x,a.y,a.R,a.P,a.g,24,a.c,a.d,false)}}
 bx.globalAlpha=1}
-addEventListener('resize',()=>{size();bgSize();if(!on)fit()});
-fit();bgSize();bgA=Array.from({length:10},mk);requestAnimationFrame(bgLoop);
+addEventListener('resize',()=>{size();bgSize();const n=bgN();while(bgA.length<n)bgA.push(mk());bgA.length=Math.min(bgA.length,n);if(!on)fit()});
+fit();bgSize();const bgN=()=>matchMedia('(min-aspect-ratio:5/4)').matches?20:10;bgA=Array.from({length:bgN()},mk);requestAnimationFrame(bgLoop);
 
 /* families */
 const R=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
 const FAM=[
-{n:'Everyday Life',k:1,s:8,e:[1,6,7,8,11,13,14,17,20,26,29,30,47,79],d:'These are the elements you meet every day: in the air you breathe, the food you eat and the things you use.'},
-{n:'Noble Gases',k:1,s:2,e:[2,10,18,36,54,86,118],d:'Noble gases are shy. They hardly ever mix with other elements, so they float around alone. Some make glowing signs!'},
+{n:'Everyday Life',k:1,s:8,e:[1,2,6,7,8,10,11,13,14,17,18,20,26,29,30,47,79],d:'These are the elements you meet every day: in the air you breathe, in balloons and signs, in your food and in things you use.'},
 {n:'In Your Body',k:1,s:20,e:[1,6,7,8,11,12,15,16,17,19,20,26,30,53],d:'Your body is built from these elements. Oxygen and carbon are in almost every part of you, and calcium makes your bones strong.'},
 {n:'Money and Jewelry',k:1,s:79,e:[29,46,47,78,79],d:'These shiny metals don’t rust easily, so people use them for coins, rings and jewelry.'},
-{n:'Fireworks Colors',k:1,s:38,e:[3,11,19,20,29,38,56],d:'When some elements get very hot, they glow in bright colors. Fireworks use them to make reds, greens and yellows.'},
+{n:'Fireworks and Lights',k:1,s:10,e:[3,10,11,19,20,29,36,38,54,56],d:'Hot elements glow in bright colors, which makes fireworks. Some gases glow when electricity runs through them, like in neon signs.'},
+{n:'Metals and Gadgets',k:1,s:14,e:[3,13,14,22,26,27,28,29,30,47,49,50,60,73,74,78,79],d:'These metals and elements are inside your gadgets and tools: batteries, wires, computer chips, touch screens and magnets.'},
 {n:'Alkali Metals',s:11,e:[3,11,19,37,55,87],d:'Alkali metals are soft and shiny, and they react very fast with water. Never touch them!'},
 {n:'Alkaline Earth Metals',s:20,e:[4,12,20,38,56,88],d:'These metals are a little harder than alkali metals. You find them in chalk, bones and fireworks.'},
-{n:'Halogens',s:17,e:[9,17,35,53,85,117],d:'Halogens are very eager to react. Chlorine cleans swimming pools, and iodine is added to salt.'},
-{n:'Metalloids',s:14,e:[5,14,32,33,51,52],d:'Metalloids are part metal and part nonmetal. Silicon, used in computer chips, is the most famous.'},
 {n:'Transition Metals',s:26,e:[...R(21,30),...R(39,48),...R(72,80),...R(104,112)],d:'These are the strong, shiny metals in the middle of the table, like iron, copper and gold.'},
 {n:'Other Metals',s:13,e:[13,31,49,50,81,82,83,84],d:'These softer metals sit next to the metalloids. Aluminum foil and tin cans are made from them.'},
+{n:'Metalloids',s:14,e:[5,14,32,33,51,52],d:'Metalloids are part metal and part nonmetal. Silicon, used in computer chips, is the most famous.'},
 {n:'Life Builders',s:6,e:[1,6,7,8,15,16,34],d:'Life builders are nonmetals that make up living things. Carbon is in everything alive.'},
+{n:'Halogens',s:17,e:[9,17,35,53,85,117],d:'Halogens are very eager to react. Chlorine cleans swimming pools, and iodine is added to salt.'},
+{n:'Noble Gases',s:2,e:[2,10,18,36,54,86,118],d:'Noble gases are shy. They hardly ever mix with other elements, so they float around alone. Some make glowing signs!'},
 {n:'Rare Earths',s:60,e:R(57,71),d:'Rare earths aren’t really rare. They make strong magnets and bright colors in screens.'},
 {n:'Radioactive Giants',s:92,e:R(89,103),d:'Radioactive elements give off invisible energy and slowly change into other elements. Uranium makes power.'},
 {n:'Made in Labs',s:94,e:[43,61,...R(93,118)],d:'People make these elements in labs by smashing atoms together. Most last only seconds.'}];
