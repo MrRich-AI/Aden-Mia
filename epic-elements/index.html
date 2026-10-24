@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Epic Elements of the Periodic Table</title>
+<style>
+:root{color-scheme:dark;--solid:#06160a;--a-solid:#33ff66;--liquid:#1a1200;--a-liquid:#ffb000;--gas:#00161a;--a-gas:#33e0ff;--unk:#0a0a0a;--a-unk:#4d5a4d;--g:#7dff9a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:#030803;color:var(--g);font-family:"Courier New",monospace;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid #1d3d24}
+header b{letter-spacing:.08em;text-shadow:0 0 8px currentColor}
+button{font:inherit;color:var(--g);background:#06160a;border:1px solid #33ff6688;padding:5px 11px;cursor:pointer}
+button:focus-visible{outline:2px solid #33e0ff}
+#vp{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#hint{position:absolute;left:10px;bottom:8px;font-size:12px;opacity:.7;pointer-events:none;text-shadow:0 0 4px #000}
+#tbl{position:absolute;left:0;top:0;transform-origin:0 0;display:grid;grid-template-columns:repeat(18,84px);grid-template-rows:repeat(7,100px) 12px repeat(2,100px);gap:3px}
+.cell{display:flex;flex-direction:column;justify-content:space-between;padding:4px 3px;line-height:1.2;border:1.5px solid var(--bds);background:var(--bgs);box-shadow:0 0 7px -1px var(--bds);color:var(--g);cursor:pointer}
+.cell.sel{outline:2px solid #fff;outline-offset:1px}
+.s-solid{--bgs:var(--solid);--bds:var(--a-solid)}
+.s-liquid{--bgs:var(--liquid);--bds:var(--a-liquid)}
+.s-gas{--bgs:var(--gas);--bds:var(--a-gas)}
+.s-unknown{--bgs:var(--unk);--bds:var(--a-unk)}
+.n{font-size:13px;font-weight:700}
+.sy{font-size:30px;font-weight:700;text-align:center;text-shadow:0 0 8px currentColor}
+.nm{font-size:9.5px;letter-spacing:-.07em;text-align:center;white-space:nowrap}
+.st{font-size:8px;text-align:center;opacity:.8;text-transform:uppercase}
+.ph{border-style:dashed;background:none;box-shadow:none;justify-content:center;align-items:center;font-size:11px;opacity:.5;cursor:default}
+#win{position:fixed;inset:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#030803;display:grid;grid-template-rows:auto minmax(0,1fr);visibility:hidden;opacity:0;transition:opacity .3s,visibility .3s;z-index:5}
+#win.on{visibility:visible;opacity:1}
+.tb{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-bottom:1px solid #1d3d24}
+.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);min-height:0}
+.q>div{position:relative;min-width:0;min-height:0;overflow:hidden}
+.lp{grid-area:1/1;container-type:size;display:grid;place-items:center;border-right:1px solid #1d3d24;border-bottom:1px solid #1d3d24;overflow:visible!important}
+#u{grid-area:1/2;border-bottom:1px solid #1d3d24}
+#lr{grid-area:2/2}
+#lr .qh{top:auto;bottom:8px}
+#ll{grid-area:2/1;container-type:size;border-right:1px solid #1d3d24}
+#big{width:min(88cqw,66cqh);height:min(115cqw,88cqh);perspective:900px;cursor:pointer}
+#big .fl{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s}
+#big.flipped .fl{transform:rotateY(180deg)}
+#big .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:4cqw}
+#big .back{transform:rotateY(180deg);justify-content:flex-start;gap:1.2em;overflow:auto;font-family:Verdana,Arial,sans-serif;font-size:clamp(10.5px,min(4.2cqw,3.3cqh),15px);line-height:1.35;padding:9cqw 3cqw 3cqw}
+#big .back b{color:#fff}
+.fi{position:absolute;top:2.5cqw;right:2.5cqw;width:max(14px,6.5cqw);height:max(14px,6.5cqw);opacity:.8;pointer-events:none}
+#fh{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:11px;opacity:.6;pointer-events:none}
+#big .n{font-size:9cqw}#big .sy{font-size:min(36cqw,28cqh)}#big .nm{font-size:9.5cqw}#big .st{font-size:5.5cqw}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.qh{position:absolute;left:10px;right:10px;top:8px;display:flex;justify-content:space-between;align-items:center;font-size:clamp(12px,2vmin,17px);z-index:2}
+.seg{display:flex}
+.seg button{padding:3px 14px;border-radius:0;font-size:inherit}
+.seg button+button{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--g);color:#030803;font-weight:700}
+#sent{grid-column:2;grid-row:1/3;align-self:center;position:relative;z-index:3;text-align:center;font-size:clamp(11px,2vmin,17px);line-height:1.3;padding:4px 8px;background:#030803e6;border-block:1px solid #1d3d24;pointer-events:none}
+.llw{display:flex;flex-direction:column;height:100%}
+.pic{flex:1;display:grid;place-items:center;margin:8px 8px 4px;border:1.5px dashed #33ff6666;text-align:center;font-size:12px;opacity:.85;cursor:pointer;overflow:hidden;min-height:56px;min-width:0}
+.pic img{width:100%;height:100%;object-fit:contain}
+#pc{width:100%;height:100%;display:grid;place-items:center;min-height:0}
+.sf{width:1.5em;height:1.5em;vertical-align:middle;overflow:visible}
+.sf.r{animation:pl 2.6s ease-in-out infinite}
+@keyframes pl{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.6}}
+@media (prefers-reduced-motion:reduce){.sf.r{animation:none}}
+#info{flex:0 1 auto;max-height:62%;overflow:auto;padding:4px 10px 8px;font-size:clamp(10.5px,2.6cqh,16px);line-height:1.35}
+@container (min-aspect-ratio:5/4){.llw{flex-direction:row}.pic{margin:10px 4px 10px 10px}#info{align-self:center;max-height:100%;max-width:55%;padding:10px 14px;font-size:clamp(11px,3.8cqh,18px);min-width:36%}}
+header{flex-wrap:wrap}
+header b{font-size:clamp(12px,3.8vw,18px);letter-spacing:.03em}
+[hidden]{display:none!important}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:6px 10px;white-space:nowrap;border-bottom:1px solid #1d3d24;scrollbar-width:thin}
+.chips button{flex:none;border-radius:999px;font-size:13px}
+.chips button[aria-pressed="true"]{background:var(--g);color:#030803;font-weight:700}
+#sci{background:#050e07}
+#desc{flex:none;padding:8px 12px;border-bottom:1px solid #1d3d24;background:#06160a}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#ds{color:#ffd23f;font-size:13px}
+#dp{margin:4px 0 6px;font-size:13px;line-height:1.35}
+#gm{min-height:44px;border:1.5px dashed #33ff6655;display:grid;place-items:center;font-size:12px;opacity:.5}
+#tbl .cell{position:relative;transition:opacity .3s}
+.cell.fade{opacity:.12;pointer-events:none}
+.cell.star{box-shadow:0 0 14px #ffd23f;outline:2px solid #ffd23f;outline-offset:1px}
+.cell.star::after{content:"★";position:absolute;top:2px;right:4px;color:#ffd23f;font-size:15px;line-height:1}
+</style></head>
+<body>
+<header><b>Epic Elements of the Periodic Table</b><div><button id="zo" aria-label="Zoom out">−</button> <button id="zi" aria-label="Zoom in">+</button> <button id="fit">FIT</button></div></header>
+<nav id="fam" class="chips" aria-label="Kid-friendly families"></nav><nav id="sci" class="chips" aria-label="Scientific families" hidden></nav>
+<section id="desc" hidden><div class="dh"><b id="dt"></b><button id="dx" aria-label="Clear family">✕</button></div><div id="ds"></div><p id="dp"></p><div id="gm">Game selection goes here</div></section>
+<div id="vp"><canvas id="bg"></canvas><div id="tbl"></div><div id="hint">scroll / pinch = zoom · drag = pan · double-click an element</div></div>
+<div id="win">
+<div class="tb"><div><button id="pv" aria-label="Previous">‹</button> <button id="nx" aria-label="Next">›</button></div><button id="cl" aria-label="Close">✕</button></div>
+<div class="q">
+<div class="lp"><div id="big" role="button" tabindex="0" aria-label="Flip card"></div><div id="fh">↻ tap card to flip</div></div>
+<div id="u"><div class="qh"><b id="bl">Bohr Model</b><span class="seg"><button id="b3" aria-pressed="true">3D</button><button id="b2" aria-pressed="false">2D</button></span></div><canvas id="cv"></canvas></div>
+<div id="ll"><div class="llw"><label class="pic" id="pic"><div id="pc"></div><input id="file" type="file" accept="image/*" hidden></label><div id="info"></div></div></div>
+<div id="lr"><div class="qh"><b>Quantum Cloud Model</b></div><canvas id="cq"></canvas></div>
+<div id="sent"></div>
+</div></div>
+<script>
+const D="H Hydrogen|He Helium|Li Lithium|Be Beryllium|B Boron|C Carbon|N Nitrogen|O Oxygen|F Fluorine|Ne Neon|Na Sodium|Mg Magnesium|Al Aluminium|Si Silicon|P Phosphorus|S Sulfur|Cl Chlorine|Ar Argon|K Potassium|Ca Calcium|Sc Scandium|Ti Titanium|V Vanadium|Cr Chromium|Mn Manganese|Fe Iron|Co Cobalt|Ni Nickel|Cu Copper|Zn Zinc|Ga Gallium|Ge Germanium|As Arsenic|Se Selenium|Br Bromine|Kr Krypton|Rb Rubidium|Sr Strontium|Y Yttrium|Zr Zirconium|Nb Niobium|Mo Molybdenum|Tc Technetium|Ru Ruthenium|Rh Rhodium|Pd Palladium|Ag Silver|Cd Cadmium|In Indium|Sn Tin|Sb Antimony|Te Tellurium|I Iodine|Xe Xenon|Cs Caesium|Ba Barium|La Lanthanum|Ce Cerium|Pr Praseodymium|Nd Neodymium|Pm Promethium|Sm Samarium|Eu Europium|Gd Gadolinium|Tb Terbium|Dy Dysprosium|Ho Holmium|Er Erbium|Tm Thulium|Yb Ytterbium|Lu Lutetium|Hf Hafnium|Ta Tantalum|W Tungsten|Re Rhenium|Os Osmium|Ir Iridium|Pt Platinum|Au Gold|Hg Mercury|Tl Thallium|Pb Lead|Bi Bismuth|Po Polonium|At Astatine|Rn Radon|Fr Francium|Ra Radium|Ac Actinium|Th Thorium|Pa Protactinium|U Uranium|Np Neptunium|Pu Plutonium|Am Americium|Cm Curium|Bk Berkelium|Cf Californium|Es Einsteinium|Fm Fermium|Md Mendelevium|No Nobelium|Lr Lawrencium|Rf Rutherfordium|Db Dubnium|Sg Seaborgium|Bh Bohrium|Hs Hassium|Mt Meitnerium|Ds Darmstadtium|Rg Roentgenium|Cn Copernicium|Nh Nihonium|Fl Flerovium|Mc Moscovium|Lv Livermorium|Ts Tennessine|Og Oganesson".split("|");
+const GAS=[1,2,7,8,9,10,17,18,36,54,86],LIQ=[35,80],COL={solid:'#33ff66',liquid:'#ffb000',gas:'#33e0ff',unknown:'#8a9a8a'};
+const $=id=>document.getElementById(id);
+const state=n=>GAS.includes(n)?'gas':LIQ.includes(n)?'liquid':n>=104?'unknown':'solid';
+function pos(n){if(n==1)return[1,1];if(n==2)return[1,18];if(n<=4)return[2,n-2];if(n<=10)return[2,n+8];if(n<=12)return[3,n-10];if(n<=18)return[3,n];if(n<=36)return[4,n-18];if(n<=54)return[5,n-36];if(n<=56)return[6,n-54];if(n<=71)return[9,n-54];if(n<=86)return[6,n-68];if(n<=88)return[7,n-86];if(n<=103)return[10,n-86];return[7,n-100]}
+const inner=n=>{const[sy,nm]=D[n-1].split(" ");return`<span class="n">${n}</span><span class="sy">${sy}</span><span class="nm">${nm}</span><span class="st">${state(n)}</span>`};
+let h='';
+D.forEach((e,i)=>{const n=i+1,[r,c]=pos(n);h+=`<div class="cell s-${state(n)}" data-n="${n}" style="grid-row:${r};grid-column:${c}">${inner(n)}</div>`});
+h+='<div class="cell ph" style="grid-row:6;grid-column:3">57–71</div><div class="cell ph" style="grid-row:7;grid-column:3">89–103</div>';
+const tb=$('tbl'),vp=$('vp');tb.innerHTML=h;
+/* pan + zoom */
+let S=1,X=0,Y=0;
+const ap=()=>tb.style.transform=`translate(${X}px,${Y}px) scale(${S})`;
+function fit(){const w=vp.clientWidth,hh=vp.clientHeight,tw=tb.offsetWidth,th=tb.offsetHeight;S=Math.min(w/tw,hh/th)*.98;X=(w-tw*S)/2;Y=(hh-th*S)/2;ap()}
+function zoomAt(f,cx,cy){const n=Math.min(6,Math.max(.1,S*f));f=n/S;X=cx-(cx-X)*f;Y=cy-(cy-Y)*f;S=n;ap()}
+const mid=f=>zoomAt(f,vp.clientWidth/2,vp.clientHeight/2);
+$('zi').onclick=()=>mid(1.35);$('zo').onclick=()=>mid(1/1.35);$('fit').onclick=fit;
+vp.addEventListener('wheel',e=>{e.preventDefault();const r=vp.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top)},{passive:false});
+const P=new Map();let drag=0,pd=0,dCell=null,lastN=0,lastT=0;
+const dist=()=>{const a=[...P.values()];return Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])};
+vp.addEventListener('pointerdown',e=>{vp.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size==1){dCell=e.target.closest('.cell[data-n]');drag=0}else{dCell=null;drag=99;pd=dist()}});
+vp.addEventListener('pointermove',e=>{const p=P.get(e.pointerId);if(!p)return;
+if(P.size==2){P.set(e.pointerId,[e.clientX,e.clientY]);const a=[...P.values()],d=dist(),r=vp.getBoundingClientRect();if(pd)zoomAt(d/pd,(a[0][0]+a[1][0])/2-r.left,(a[0][1]+a[1][1])/2-r.top);pd=d;return}
+const dx=e.clientX-p[0],dy=e.clientY-p[1];drag+=Math.abs(dx)+Math.abs(dy);if(drag>8){X+=dx;Y+=dy;ap()}P.set(e.pointerId,[e.clientX,e.clientY])});
+vp.addEventListener('pointerup',e=>{if(!P.has(e.pointerId))return;const one=P.size==1;P.delete(e.pointerId);pd=0;
+if(one&&drag<8&&dCell){const n=+dCell.dataset.n,t=Date.now();if(n==lastN&&t-lastT<400){lastT=0;openEl(n,dCell)}else{sel(n);lastN=n;lastT=t}}});
+vp.addEventListener('pointercancel',e=>P.delete(e.pointerId));
+function sel(n){document.querySelectorAll('.cell.sel').forEach(c=>c.classList.remove('sel'));const c=tb.querySelector(`[data-n="${n}"]`);if(c)c.classList.add('sel')}
+/* element window */
+const win=$('win'),big=$('big'),cv=$('cv'),cq=$('cq'),x1=cv.getContext('2d'),x2=cq.getContext('2d'),pics={};
+let cur=1,on=0,sh=[],col=COL.solid,flat=0,pts=[],gen=0,lastQ=0;
+const FILL=[[1,2],[2,2],[2,6],[3,2],[3,6],[4,2],[3,10],[4,6],[5,2],[4,10],[5,6],[6,2],[4,14],[5,10],[6,6],[7,2],[5,14],[6,10],[7,6]];
+function shells(z){const s=[];for(const[n,c]of FILL){if(z<=0)break;const k=Math.min(c,z);s[n-1]=(s[n-1]||0)+k;z-=k}return s}
+const SC=['#ffd23f','#ff7b3a','#ff4fa3','#b86bff','#4aa3ff','#33e0ff','#7dff9a'];
+const maxA=()=>Math.max(6,Math.min(70,Math.floor(1400/cur)));
+function sampleQ(shl,P,g){const K=shl.length;shl.forEach((c,k)=>{const m=(.08+.5*(k+1)/K)/3;for(let i=0;i<c;i++){let r;do{r=-m*Math.log(Math.random()*Math.random()*Math.random())}while(r>1);const t=Math.random()*6.2832;P.push({x:r*Math.cos(t),y:r*Math.sin(t),g,k})}})}
+function prune(P,g,A){while(P.length&&g-P[0].g>=A)P.shift()}
+function atomBohr(x,mx,my,R,shl,z,t,fl,c,d,glow){const K=shl.length,E=[];x.lineWidth=Math.max(1,d);x.shadowBlur=0;
+shl.forEach((cnt,k)=>{const r=R*(.2+.8*(k+1)/K),sg=k%2?1:-1,a=fl?0:1+k*.5,b=fl?0:k*1.3+t*.00008*sg,sa=Math.sin(a),ca=Math.cos(a),sb=Math.sin(b),cb=Math.cos(b);
+const Q=q=>{const px=r*Math.cos(q),py=r*Math.sin(q)*ca,pz=r*Math.sin(q)*sa;return[px*cb+pz*sb,py,-px*sb+pz*cb]};
+x.beginPath();for(let i=0;i<=72;i++){const p=Q(i/72*6.2832),s=1+p[2]/(R*4);i?x.lineTo(mx+p[0]*s,my+p[1]*s):x.moveTo(mx+p[0]*s,my+p[1]*s)}
+x.strokeStyle=SC[k%7]+'88';x.stroke();
+const sp=t*.0009*(1.6-k/K)*sg;for(let i=0;i<cnt;i++)E.push(Q(sp+i/cnt*6.2832).concat(k))});
+E.sort((p,q)=>p[2]-q[2]);
+const dot=p=>{const s=1+p[2]/(R*4),cc=SC[p[3]%7];x.fillStyle=cc;if(glow)x.shadowColor=cc;x.beginPath();x.arc(mx+p[0]*s,my+p[1]*s,Math.max(2*d,R*.03)*s,0,6.2832);x.fill()};
+x.fillStyle=c;if(glow){x.shadowColor=c;x.shadowBlur=8*d}E.forEach(p=>{if(p[2]<0)dot(p)});
+const nr=R*(.06+.1*Math.cbrt(z/118)),g=x.createRadialGradient(mx,my,0,mx,my,nr);g.addColorStop(0,'#fff');g.addColorStop(.4,c);g.addColorStop(1,c+'33');
+x.fillStyle=g;if(glow)x.shadowBlur=20*d;x.beginPath();x.arc(mx,my,nr,0,6.2832);x.fill();
+x.fillStyle=c;if(glow)x.shadowBlur=8*d;E.forEach(p=>{if(p[2]>=0)dot(p)});x.shadowBlur=0}
+function atomQ(x,mx,my,R,P,g,A,c,d,glow){x.shadowBlur=0;x.lineWidth=d;x.setLineDash([3*d,6*d]);x.strokeStyle=c+'55';x.beginPath();x.arc(mx,my,R,0,6.2832);x.stroke();x.setLineDash([]);
+const base=x.globalAlpha;x.fillStyle=c;
+for(const p of P){const age=g-p.g;if(age>=A)continue;const f=1-age/A;let r=1.5*d;x.fillStyle=SC[p.k%7];
+if(age==0&&glow){x.globalAlpha=base;x.shadowColor=SC[p.k%7];x.shadowBlur=12*d;r=3.6*d}else{x.shadowBlur=0;x.globalAlpha=base*(age==0?.9:.07+.5*f*f)}
+x.beginPath();x.arc(mx+p.x*R,my+p.y*R,r,0,6.2832);x.fill()}
+x.globalAlpha=base;x.shadowBlur=0;x.fillStyle='#fff';x.beginPath();x.arc(mx,my,3*d,0,6.2832);x.fill()}
+const ER=['Everywhere','Common','Uncommon','Rare','Super rare','Lab-made'],UR=['Super common','Common','Uncommon','Rare','Super rare','Almost none'],SF={g:['','Safe'],y:['','Be careful'],r:['','Danger']},SHP={g:'<circle cx="12" cy="12" r="10.5" fill="#22c55e" stroke="#fff" stroke-width="1.5"/>',y:'<polygon points="12,1 23,12 12,23 1,12" fill="#ffd23f" stroke="#111" stroke-width="2" stroke-linejoin="round"/>',r:'<polygon points="7,1 17,1 23,7 23,17 17,23 7,23 1,17 1,7" fill="#e11d2e" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>'};
+const INFO=`1 0 y|Water and stars; rocket fuel|Lightest thing there is
+4 0 g|Balloons; found in the Sun and natural gas|Makes your voice squeaky
+2 3 y|Phone batteries; found in salty lakes|Floats on water
+3 3 r|Space telescopes; found in gems like emeralds|Gives emeralds their green
+2 3 g|Glass and soap; found in the mineral borax|Helps plants grow
+1 1 g|Pencils, diamonds, all living things|Diamonds and pencil lead are both carbon
+2 1 g|Plant food; most of the air around you|Most of the air you breathe
+0 1 g|Breathing; found in air and water|Half of Earth’s crust is oxygen
+1 3 r|Toothpaste; found in rocks and minerals|Most reactive element
+4 1 g|Bright glowing signs; a tiny bit in the air|Glows red-orange
+0 2 y|Table salt; found in the ocean|Fizzes wildly in water
+0 1 g|Fireworks; found in rocks and seawater|Burns super bright
+0 2 g|Cans and foil; found in clay and soil|Once pricier than gold
+0 1 g|Computer chips; found in sand and rocks|Sand is mostly silicon
+1 3 y|Matches and plant food; found in bones and rocks|In your bones
+1 1 g|Matches and rubber; found near volcanoes|Smells like rotten eggs in some forms
+1 3 r|Pools and clean water; found in salt and seawater|Kills germs
+2 2 g|Light bulbs; found in the air|Third most common gas in air
+0 3 y|Plant food; found in bananas and rocks|Bananas are full of it
+0 2 g|Strong bones; found in milk, shells and chalk|Seashells are calcium
+1 3 g|Sports gear; found in a few rare rocks|Named for Scandinavia
+1 3 g|Bike frames and hip implants; found in sand and rocks|Strong as steel, much lighter
+1 3 y|Strong tools; found in some rocks and soil|Named for a goddess
+1 3 y|Shiny car parts; found in rocks and rubies|Makes rubies red
+1 3 y|Making steel; found in rocks and the sea floor|Tiny bit in your body
+0 1 g|Buildings and cars; found in rocks and your blood|Earth’s core is mostly iron
+2 3 y|Blue paint and batteries; found in some rocks|Makes blue glass
+1 3 y|Coins; found deep in the Earth|The 5¢ coin is named for it
+2 3 g|Wires and pennies; found in rocks|Statue of Liberty turned green
+1 3 g|Roofs and vitamins; found in rocks|Helps wounds heal
+2 3 g|Phone chips; found in tiny amounts in rocks|Melts in your hand
+2 3 g|Fiber optic cables; found in a few rocks|Named for Germany
+2 3 r|Old pesticides; found in some rocks|Famous old poison
+3 3 y|Solar panels; found in soil and some foods|Named for the Moon
+2 3 r|Fire safety; found in seawater|Liquid at room temperature
+4 3 g|Lasers and lights; a tiny bit in the air|Sounds like Superman’s Kryptonite
+2 3 y|Science tools; found in rocks|Makes red-purple flames
+1 3 y|Red fireworks; found in rocks and seawater|Makes fireworks red
+1 3 g|TV screens; found in a few rocks|Four elements share its town name
+1 3 g|Fake diamonds; found in sand and rocks|Cubic zirconia is a fake gem
+2 4 g|Jet engines; found in a few rocks|Named for a Greek queen
+2 4 g|Tough steel; found in rocks|Once mistaken for lead
+5 5 r|Doctor scans; made in labs|First lab-made element
+4 4 g|Pen tips; found in rare rocks|Named for Russia
+4 4 g|Car parts; found in rare rocks|Costs more than gold
+4 4 g|Car exhaust filters; found in rare rocks|Named for an asteroid
+3 4 g|Jewelry and forks; found in rocks|Best at carrying electricity
+3 4 r|Old batteries; found in rocks with zinc|Soft enough to cut with a knife
+3 4 g|Touch screens; found in rocks with zinc|Named for a color
+2 4 g|Food cans; found in rocks|Bent tin crackles
+3 4 y|Batteries; found in rocks|Used in ancient eye makeup
+4 4 y|Solar panels; found in rare rocks|Named for Earth
+2 4 y|Iodized salt; found in seaweed and the sea|Makes purple gas
+4 4 g|Car headlights; a tiny bit in the air|Glows blue-purple
+2 4 y|Atomic clocks; found in rare rocks|Melts near room temperature
+1 4 y|X-ray drinks; found in rocks|Makes green fireworks
+1 4 g|Camera lenses; found in rocks|Hid among other elements
+1 4 g|Lighter sparks; found in rocks|Sparks when scratched
+2 4 g|Welding goggles; found in rocks|Makes green glass
+1 4 g|Strong magnets; found in rocks|In headphone magnets
+5 5 r|Glow paint; almost never found in nature|Almost none in nature
+2 4 g|Magnets; found in rocks|Named for a mine official
+3 4 g|Euro bills; found in rocks|Makes bills glow under UV light
+2 4 g|Body scans; found in rocks|Named for a scientist
+3 4 g|Green screens; found in rocks|Named for a Swedish town
+2 4 g|Magnets; found in rocks|Hard to find
+3 4 g|Lasers; found in rocks|Named for Stockholm
+2 4 g|Internet cables; found in rocks|Named for a Swedish town
+3 4 g|Portable X-rays; found in rocks|Rarest of its group
+2 4 g|Atomic clocks; found in rocks|Named for a Swedish town
+3 4 g|Medical scans; found in rocks|Named for Paris
+2 4 g|Computer chips; found in rocks with zirconium|Named for Copenhagen
+2 4 g|Phone parts; found in rocks|Safe for hip implants
+2 4 g|Light bulb wires; found in rocks|Highest melting point of any metal
+4 4 g|Jet engines; found in rocks|Last stable element found
+4 4 y|Pen tips; found in rare rocks|Densest element
+4 4 g|Spark plugs; found in rare rocks|A dinosaur-killing asteroid left it
+4 4 g|Rings and car parts; found in rare rocks|Rarer than gold
+4 4 g|Jewelry and phones; found in streams and rocks|Never rusts
+3 4 r|Old thermometers; found in red rocks|Liquid metal
+3 4 r|Old rat poison; found in rocks|Burns with a green flame
+2 4 r|Old pipes and paint; found in rocks|Pencil lead is not lead
+3 4 g|Stomach medicine; found in rocks|Makes rainbow crystals
+4 5 r|Static brushes; found in tiny amounts in rocks|Found by Marie Curie
+4 5 r|Science only; seen for just seconds|Rarest natural element
+4 5 r|Science only; seeps out of rocks into basements|Radioactive gas from rocks
+4 5 r|Science only; made in labs|Vanishes in minutes
+4 5 r|Old glow paint; found in tiny amounts in rocks|Glows in the dark
+4 5 r|Science only; found in uranium rocks|Glows blue
+2 4 r|Old lantern mantles; found in rocks and sand|Named for Thor
+4 5 r|Science only; found in uranium rocks|Super rare
+2 4 r|Power plants; found in rocks|Powers whole cities
+4 5 r|Science only; made in labs|First past uranium
+4 5 r|Space probe power; made in labs|Powers space probes
+5 5 r|Smoke alarms; made in labs|Inside many smoke alarms
+5 5 r|Space rover tools; made in labs|Named for the Curies
+5 5 r|Science only; made in labs|Named for a California city
+5 5 r|Science only; made in labs|Named for a state
+5 5 r|Science only; made in labs|Found in bomb test dust
+5 5 r|Science only; made in labs|Found in bomb test dust
+5 5 r|Science only; made in labs|Named for the table’s inventor
+5 5 r|Science only; made in labs|Named for the Nobel Prize founder
+5 5 r|Science only; made in labs|Named for the atom smasher inventor
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Named while he was alive
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Named for a famous woman scientist
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Named for the X-ray discoverer
+5 5 r|Science only; made in labs|Named for a famous astronomer
+5 5 r|Science only; made in labs|First element named in Asia
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Lasts only seconds
+5 5 r|Science only; made in labs|Made in a California lab
+5 5 r|Science only; made in labs|Made with help from Tennessee
+5 5 r|Science only; made in labs|Heaviest element known`.split('\n').map(l=>{const[a,b,d]=l.split('|'),[e,u,sf]=a.split(' ');return{e:+e,u:+u,s:sf,b,d}});
+const BACK=`A colorless gas you can’t see or smell. It is lighter than anything else.|The name comes from Greek words that mean “water maker,” because hydrogen burns to make water.|Henry Cavendish found it in 1766 by pouring acid on metal and catching the bubbles of gas. Antoine Lavoisier gave it its name later.
+A light, invisible gas with no smell or color.|It is named after “helios,” the Greek word for the sun.|In 1868 scientists saw a strange yellow line in sunlight during an eclipse and guessed it was a new element in the Sun. In 1895 William Ramsay found helium on Earth too.
+A soft, silvery metal. It is so soft you can cut it with a knife, and it is light enough to float on water.|The name comes from “lithos,” the Greek word for stone, because it was found in rocks.|Johan Arfwedson found it in 1817 while studying a rock called petalite. He worked out that the rock held a new metal.
+A light, gray metal that is hard and strong.|The name comes from a gem called beryl, which contains this metal.|Louis Vauquelin found it in 1798 while studying the gems beryl and emerald. He noticed they held a new substance. The pure metal was made about 30 years later.
+A hard, dark solid that breaks easily. It is not shiny like a metal.|The name comes from “borax,” a mineral found in dry lake beds.|People used borax for thousands of years. In 1808 Joseph Gay-Lussac, Louis Thénard and Humphry Davy each made pure boron from it.
+It can be soft and black like pencil lead, or hard and clear like a diamond.|The name comes from “carbo,” the Latin word for coal.|Nobody found carbon. People have known it since ancient times from soot and charcoal. In 1796 Smithson Tennant showed that diamonds are made of carbon.
+A gas you can’t see, smell or taste. It makes up most of the air.|The name comes from words meaning “maker of saltpeter,” a salty mineral.|Daniel Rutherford found it in 1772. He trapped air in a jar and used up the part that burns. A gas was left that would not let a flame burn or animals live.
+A gas you can’t see or smell. Liquid oxygen looks pale blue.|The name comes from Greek words meaning “acid maker.” People once thought all acids had oxygen in them.|Carl Scheele and Joseph Priestley each found it in the 1770s by heating certain solids and catching the gas. Antoine Lavoisier gave it its name.
+A pale yellow gas that smells sharp. It is very dangerous.|The name comes from the Latin word “fluere,” which means “to flow.”|Many scientists got hurt trying to make it. Henri Moissan finally made it pure in 1886 by using electricity. He won a Nobel Prize for it.
+A gas you can’t see or smell. It glows bright red-orange in a glass tube with electricity.|The name comes from “neos,” the Greek word for new.|William Ramsay and Morris Travers found it in 1898 by cooling air until it turned to liquid, then letting it boil away bit by bit.
+A soft, shiny silver metal that you can cut with a knife.|The name comes from “soda.” Its symbol, Na, comes from the Latin word “natrium.”|Humphry Davy found it in 1807. He ran electricity through melted soda and shiny blobs of a new metal appeared.
+A light, shiny, silver metal. Its ribbon burns with a very bright white light.|The name comes from Magnesia, a place in Greece where a white mineral was found.|Humphry Davy found it in 1808 using electricity. Antoine Bussy made a purer form in 1831.
+A light, soft, silver metal.|The name comes from “alumen,” the Latin word for the mineral alum.|Hans Christian Ørsted first made a little in 1825, and Friedrich Wöhler made more in 1827. For a while it cost more than gold!
+A hard, shiny, gray-blue solid that breaks easily.|The name comes from “silex,” the Latin word for flint, a hard stone.|Jöns Jacob Berzelius made pure silicon in 1824. He used another metal to pull it out of a silicon compound.
+It can be a waxy white solid that glows in the dark, or a dark red powder.|The name comes from Greek words meaning “light bringer,” because it glows.|Hennig Brand found it in 1669. He was boiling down lots of urine, hoping to make gold, and got a glowing solid instead!
+A bright yellow solid that breaks easily. Some forms smell like rotten eggs.|The name comes from an old Latin word. People also called it brimstone, which means “burning stone.”|People have known sulfur since ancient times because it is found near volcanoes. In 1777 Antoine Lavoisier showed it is a real element.
+A pale green-yellow gas with a sharp smell, like a swimming pool.|The name comes from “chloros,” the Greek word for pale green.|Carl Scheele made it in 1774. In 1810 Humphry Davy showed it was an element and gave it its name.
+A gas you can’t see or smell. It doesn’t react with almost anything.|The name comes from “argos,” the Greek word for lazy, because it does not react.|Lord Rayleigh and William Ramsay found it in 1894. They noticed the nitrogen in air was a tiny bit heavier than nitrogen made in a lab. The extra weight was argon.
+A soft, silvery metal that you can cut with a knife.|The name comes from “potash,” ashes boiled in a pot. Its symbol K comes from “kalium.”|Humphry Davy found it in 1807. He used electricity on melted potash and got shiny silver beads.
+A soft, silvery-white metal.|The name comes from “calx,” the Latin word for lime, a rock used in building.|Humphry Davy found it in 1808 using electricity. People had used lime for building for thousands of years.
+A soft, silvery metal.|The name comes from Scandinavia, the region where it was found.|Lars Nilson found it in 1879 in a rare mineral. Years before, Dmitri Mendeleev had said an element like this must exist!
+A strong, light, silvery metal that does not rust.|It is named for the Titans, giants in Greek stories.|William Gregor found it in 1791 in black sand. Martin Klaproth gave it its name in 1795.
+A hard, bluish-silver metal.|The name comes from Vanadis, a Norse goddess of beauty.|Andrés del Río found it in 1801 but was told he was wrong. Nils Sefström found it again in 1830 in iron from a mine and named it.
+A hard, very shiny, silver-blue metal.|The name comes from “chroma,” the Greek word for color, because its compounds come in many colors.|Louis Vauquelin found it in 1797 in a bright orange-red mineral from Siberia.
+A hard, gray-pink metal that breaks easily.|The name comes from Magnesia, a place in Greece, like magnesium.|Carl Scheele showed in 1774 that a black mineral held a new metal. Johan Gahn made the metal by heating it with charcoal.
+A hard, gray metal that can rust. A magnet sticks to it.|Its symbol, Fe, comes from “ferrum,” the Latin word for iron.|Nobody found it. People have used iron for about 3,000 years, since the Iron Age.
+A hard, shiny, blue-gray metal.|The name comes from “kobold,” the German word for goblin. Miners blamed goblins for ruining their ore.|Georg Brandt found it around 1735 and showed that goblins were not to blame. It was a new metal.
+A hard, shiny, silvery metal that doesn’t rust easily.|The name comes from “Kupfernickel,” German for “devil’s copper,” because an ore looked like copper but made none.|Axel Cronstedt found it in 1751 while studying that tricky ore.
+A shiny, reddish-orange metal that turns green when it gets old and wet.|Its name comes from Cyprus, an island where much copper was mined long ago.|Nobody found it. People have used copper for about 10,000 years. It was one of the first metals used for tools.
+A bluish-white metal that breaks a little easily.|The name probably comes from “zinke,” a German word for spike, because of how its crystals look.|People used zinc to make brass for thousands of years. Andreas Marggraf made pure zinc in 1746.
+A soft, silvery metal that melts in your hand.|The name comes from “Gallia,” the Latin name for France.|Paul-Émile Lecoq de Boisbaudran found it in 1875 by looking at the colors of light from a rock sample.
+A shiny, grayish-white solid that breaks easily.|The name comes from Germany, the home of the scientist who found it.|Clemens Winkler found it in 1886 in a rare mineral. Mendeleev had predicted it years before.
+A gray, shiny solid that breaks easily. It is poisonous.|The name comes from a Greek word meaning “strong” or “tough.”|People have known arsenic for a very long time. Albertus Magnus is said to have made it pure around 1250.
+A gray or red solid. It carries electricity better when light shines on it.|The name comes from “selene,” the Greek word for the moon.|Jöns Jacob Berzelius found it in 1817 in leftover mud from an acid factory.
+A dark red-brown liquid that gives off smelly orange fumes. It is dangerous.|The name comes from “bromos,” the Greek word for stench.|Antoine Balard found it in 1826 in water from a salt marsh. Carl Löwig found it at about the same time.
+A gas you can’t see or smell.|The name comes from “kryptos,” the Greek word for hidden.|William Ramsay and Morris Travers found it in 1898 after letting liquid air boil away. A hidden gas was left behind.
+A soft, silvery metal that bursts into flames in air.|The name comes from “rubidus,” the Latin word for deep red, the color of its flame.|Robert Bunsen and Gustav Kirchhoff found it in 1861 by seeing new red lines in the light from a burning mineral.
+A soft, silvery metal that turns yellow in air.|The name comes from Strontian, a village in Scotland.|Adair Crawford found something new in a rock from Strontian in 1790. Humphry Davy made the pure metal in 1808.
+A soft, silvery metal.|The name comes from Ytterby, a village in Sweden.|Johan Gadolin found a new substance in a heavy black rock from Ytterby in 1794. Later scientists pulled the metal out.
+A strong, shiny, silvery metal that doesn’t rust easily.|The name comes from “zargun,” a Persian word for gold-colored, like the gem zircon.|Martin Klaproth found it in 1789 in the gem zircon. Jöns Berzelius made the pure metal in 1824.
+A soft, shiny, gray metal.|The name comes from Niobe, a queen in a Greek story.|Charles Hatchett found it in 1801 in a black rock from America. He called it columbium, and it was renamed niobium later.
+A hard, silvery-white metal.|The name comes from “molybdos,” the Greek word for lead, because its ore looked like lead.|Carl Scheele found it in 1778 in an ore people had thought was lead. Peter Hjelm made the metal in 1781.
+A silvery-gray metal. It is radioactive.|The name comes from “technetos,” the Greek word for artificial, because it was made by people.|Emilio Segrè and Carlo Perrier made it in 1937 by hitting molybdenum with fast particles. It was the first element made by people.
+A hard, silvery-white metal.|The name comes from “Ruthenia,” the Latin name for Russia.|Karl Claus found it in 1844 in leftover bits of platinum ore from Russia.
+A hard, very shiny, silver-white metal.|The name comes from “rhodon,” the Greek word for rose, because its salts are rose-colored.|William Wollaston found it in 1803 in platinum ore, around the same time as palladium.
+A soft, shiny, silver-white metal.|The name comes from Pallas, an asteroid found just before the metal.|William Wollaston found it in 1803 in platinum ore.
+A very shiny, soft, white metal.|Its symbol, Ag, comes from “argentum,” the Latin word for silver.|Nobody found it. People have used silver for over 5,000 years.
+A soft, bluish-white metal.|The name comes from “cadmia,” a Latin word for an ore that held zinc.|Friedrich Stromeyer found it in 1817 in a zinc compound that turned yellow when heated.
+A very soft, silvery metal.|The name comes from “indigo,” because it showed a bright indigo-blue line of light.|Ferdinand Reich and Hieronymus Richter found it in 1863 by studying the light from a zinc ore.
+A soft, silvery-white metal. Bending it makes a crackle called “tin cry.”|Its symbol, Sn, comes from “stannum,” the Latin word for tin.|Nobody found it. People mixed tin with copper to make bronze about 5,000 years ago.
+A shiny, silvery solid that breaks easily.|Its symbol, Sb, comes from “stibium.” The name may mean “not alone,” since it was found with other metals.|People used it long ago, even in eye makeup in ancient Egypt. Nobody knows who first found it.
+A silvery-white solid that breaks easily.|The name comes from “tellus,” the Latin word for Earth.|Franz Müller found it in 1782 in gold ore from Romania. Martin Klaproth named it in 1798.
+A shiny, dark purple-black solid. It turns into purple gas when heated.|The name comes from “iodes,” the Greek word for violet, the color of its gas.|Bernard Courtois found it in 1811 when seaweed ash and acid made purple smoke.
+A gas you can’t see or smell.|The name comes from “xenos,” the Greek word for stranger.|William Ramsay and Morris Travers found it in 1898 in the last bit of liquid air to boil away.
+A soft, golden-silver metal that melts near room temperature.|The name comes from “caesius,” the Latin word for sky blue, because of its blue lines of light.|Robert Bunsen and Gustav Kirchhoff found it in 1860 from two bright blue lines in the light of a spring water sample.
+A soft, silvery-white metal.|The name comes from “barys,” the Greek word for heavy.|Carl Scheele found a new “earth” in a heavy mineral in 1774. Humphry Davy made the pure metal in 1808.
+A soft, silvery-white metal.|The name comes from “lanthanein,” the Greek word for hidden.|Carl Mosander found it in 1839 hiding inside another substance, cerium.
+A soft, silvery metal that sparks when scratched.|It is named for Ceres, an asteroid found just two years earlier.|Jöns Berzelius and Wilhelm Hisinger found it in 1803. Martin Klaproth found it at the same time.
+A soft, silvery metal that turns green in air.|The name comes from Greek words meaning “green twin.”|Carl Auer von Welsbach found it in 1885 by splitting a mix called didymium into two parts.
+A soft, silvery metal.|The name comes from Greek words meaning “new twin.”|Carl Auer von Welsbach found it in 1885 in the same way as praseodymium. He split didymium into two.
+A metal that glows faintly. It is radioactive.|It is named after Prometheus, who stole fire from the gods in Greek stories.|Jacob Marinsky, Lawrence Glendenin and Charles Coryell found it around 1945 in waste from a nuclear reactor.
+A hard, silvery metal.|It is named after a mineral called samarskite, which was named for Colonel Samarsky, a Russian mine official.|Paul-Émile Lecoq de Boisbaudran found it in 1879 in samarskite.
+A soft, silvery metal.|It is named after the continent of Europe.|Eugène-Anatole Demarçay found it in 1901 by studying light from a sample of samarium.
+A silvery-white metal.|It is named for Johan Gadolin, the chemist who first found yttrium.|Jean Charles de Marignac found it in 1880. Lecoq de Boisbaudran later made it pure.
+A soft, silvery-gray metal.|It is named for Ytterby, the village in Sweden.|Carl Mosander found it in 1843 hiding inside yttrium.
+A soft, shiny, silvery metal.|The name comes from “dysprositos,” the Greek word for hard to get.|Paul-Émile Lecoq de Boisbaudran found it in 1886 after many tries. It was so hard to separate!
+A soft, silvery metal.|It is named for Stockholm, whose Latin name is Holmia.|Marc Delafontaine and Jacques-Louis Soret saw it first in 1878. Per Cleve found it in 1879.
+A soft, silvery metal.|It is named for Ytterby, a village in Sweden.|Carl Mosander found it in 1843 in the same mineral as terbium.
+A soft, silvery-gray metal.|It is named for Thule, an old name for far-away northern lands.|Per Cleve found it in 1879 inside erbium.
+A soft, silvery metal.|It is named for Ytterby, the Swedish village.|Jean Charles de Marignac found it in 1878 in erbium.
+A hard, silvery-white metal.|It is named for Lutetia, the Latin name for Paris.|Georges Urbain, Carl Auer von Welsbach and Charles James each found it around 1907.
+A shiny, silvery metal.|The name comes from Hafnia, the Latin name for Copenhagen.|Dirk Coster and George de Hevesy found it in 1923 in zirconium ores in Copenhagen.
+A hard, blue-gray, shiny metal.|It is named after Tantalus, a king in a Greek story who could never reach his food.|Anders Ekeberg found it in 1802. It was hard to dissolve in acid, so the name fits.
+A very hard, heavy, steel-gray metal.|Its symbol, W, comes from “wolfram.” The name “tungsten” means “heavy stone” in Swedish.|Fausto and Juan José Elhuyar found it in 1783 by heating a mineral called wolframite.
+A heavy, silvery-white metal.|It is named for the Rhine, a river in Germany.|Walter Noddack, Ida Tacke and Otto Berg found it in 1925 using X-rays.
+A bluish-white, very heavy, hard metal.|The name comes from “osme,” the Greek word for smell, because of a sharp smell.|Smithson Tennant found it in 1803 in black leftovers from platinum ore.
+A very hard, silvery-white metal.|The name comes from “iris,” the Greek word for rainbow, because its salts have many colors.|Smithson Tennant found it in 1803 in the same leftovers as osmium.
+A heavy, shiny, silvery metal.|The name comes from “platina,” Spanish for little silver.|Spanish explorers saw it in South America. Antonio de Ulloa described it in 1748.
+A heavy, shiny, yellow metal. It is soft.|Its symbol, Au, comes from “aurum,” the Latin word for gold.|Nobody found it. People have used gold for more than 6,000 years, since you can find it in streams.
+A silver liquid metal that rolls into balls. It is poisonous.|The name Mercury is for the messenger god. Its symbol, Hg, means “liquid silver” in Greek.|Nobody found it. Ancient people knew about it, and it has been found in Egyptian tombs from about 1500 BC.
+A soft, gray metal.|The name comes from “thallos,” the Greek word for green twig, because of its green line of light.|William Crookes found it in 1861 by studying light from leftovers at an acid factory.
+A soft, heavy, bluish-gray metal.|Its symbol, Pb, comes from “plumbum,” the Latin word for lead. The word “plumber” comes from it too!|Nobody found it. People have used lead for thousands of years.
+A shiny, silvery, pink-tinted metal that breaks easily.|The name may come from a German word meaning “white mass.”|People have known it a long time. In 1753 Claude Geoffroy showed it is different from lead.
+A silvery metal. It is radioactive.|It is named for Poland, the homeland of Marie Curie.|Marie and Pierre Curie found it in 1898 in a heavy black ore called pitchblende.
+Nobody has seen enough of it to know. It is radioactive.|The name comes from “astatos,” the Greek word for unstable.|Dale Corson, Kenneth MacKenzie and Emilio Segrè made it in 1940 by hitting bismuth with fast particles.
+A gas you can’t see or smell. It is radioactive.|It is named after radium, which makes it.|Friedrich Dorn found it in 1900. It leaks out of radium.
+Nobody has seen enough to know. It is radioactive.|It is named for France.|Marguerite Perey found it in 1939 in uranium samples. She was a helper of Marie Curie.
+A shiny white metal that glows a little. It is radioactive.|The name comes from “radius,” the Latin word for ray.|Marie and Pierre Curie found it in 1898 in pitchblende.
+A silvery metal that glows blue in the dark. It is radioactive.|The name comes from “aktinos,” the Greek word for ray.|André Debierne found it in 1899 in pitchblende.
+A soft, silvery-white metal. It is radioactive.|It is named after Thor, the Norse god of thunder.|Jöns Berzelius found it in 1829 in a black mineral from Norway.
+A shiny, silvery metal. It is radioactive.|The name means “parent of actinium.”|Kasimir Fajans and Oswald Göhring found it in 1913. Otto Hahn and Lise Meitner found a longer-lasting form in 1918.
+A heavy, silvery-white metal. It is radioactive.|It is named for the planet Uranus, found a few years earlier.|Martin Klaproth found it in 1789 in pitchblende. Eugène Péligot made the pure metal in 1841.
+A silvery metal. It is radioactive.|It is named for the planet Neptune, next after Uranus.|Edwin McMillan and Philip Abelson made it in 1940 by hitting uranium with neutrons.
+A silvery metal. It is radioactive.|It is named for Pluto, once the next planet past Neptune.|Glenn Seaborg and his team made it in 1940 by hitting uranium with heavy hydrogen.
+A silvery-white metal. It is radioactive.|It is named for the Americas, like europium is for Europe.|Glenn Seaborg and his team made it in 1944 by hitting plutonium with neutrons.
+A silvery metal. It is radioactive.|It is named for Marie and Pierre Curie.|Glenn Seaborg, Ralph James and Albert Ghiorso made it in 1944.
+Only tiny amounts have been made. It is radioactive.|It is named for Berkeley, California.|Scientists at Berkeley made it in 1949 by hitting americium with fast particles.
+Only tiny amounts have been made. It is radioactive.|It is named for California and its university.|Scientists at Berkeley made it in 1950 by hitting curium with fast particles.
+~|Named for Albert Einstein, the famous scientist.|Found in 1952 in dust from the first hydrogen bomb test, by a team led by Albert Ghiorso.
+~|Named for Enrico Fermi, who built the first nuclear reactor.|Found in 1952 in the same bomb test dust.
+~|Named for Dmitri Mendeleev, who made the first periodic table.|Made in 1955 by Albert Ghiorso’s team, who hit einsteinium with fast particles. Only a few atoms at a time.
+~|Named for Alfred Nobel, who started the Nobel Prize.|A Swedish team claimed it in 1957. American and Russian teams confirmed it in the 1960s.
+~|Named for Ernest Lawrence, who invented the cyclotron, an atom smasher.|Made in 1961 by Albert Ghiorso’s team in California.
+~|Named for Ernest Rutherford, who learned about the center of the atom.|Made in the 1960s by teams in Russia and California who smashed atoms together. Its name was settled in 1997.
+~|Named for Dubna, the Russian town where scientists work.|Made in 1968 in Dubna and in 1970 in California by smashing atoms together.
+~|Named for Glenn Seaborg, who found many elements. He was still alive.|Made in 1974 in California by Albert Ghiorso’s team.
+~|Named for Niels Bohr, who made the Bohr model of the atom.|Made in 1981 in Germany by a team at the GSI lab.
+~|Named for Hesse, the German state where the lab is.|Made in 1984 by a German team who smashed lead and iron atoms together.
+~|Named for Lise Meitner, a woman who helped explain nuclear fission.|Made in 1982 by a German team. Only one atom was seen!
+~|Named for Darmstadt, the German city where it was made.|Made in 1994 by the German team at GSI.
+~|Named for Wilhelm Röntgen, who found X-rays.|Made in 1994 by the German team at GSI.
+~|Named for Nicolaus Copernicus, who said Earth goes around the Sun.|Made in 1996 by the German team at GSI.
+~|Named for “Nihon,” the Japanese name for Japan.|Made in 2004 by a Japanese team at RIKEN, led by Kosuke Morita. It was the first element found in Asia.
+~|Named for Georgy Flyorov, a Russian scientist, and the lab in Dubna.|Made in 1998 by a Russian-American team in Dubna.
+~|Named for Moscow, near the lab in Dubna.|Made in 2003 by a Russian-American team.
+~|Named for Livermore Lab in California.|Made in 2000 by a Russian-American team.
+~|Named for Tennessee, where some of the labs are.|Made in 2010 by a team from Russia and the US. They hit berkelium with calcium atoms.
+~|Named for Yuri Oganessian, a Russian scientist who found many heavy elements.|Made in 2002 by a Russian-American team. Only a handful of atoms have ever been made.`.split('\n').map(l=>l.split('|'));
+const NOFEEL='Only a few atoms have ever been made, so no one has touched it. Scientists aren’t sure how it would feel.';
+let fl=0;
+const FI='<svg class="fi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function render(n){cur=n;const s=state(n),[sy,nm]=D[n-1].split(' '),p=n>1?'s':'';col=COL[s];sh=shells(n);
+pts=[];gen=0;for(let i=0;i<Math.min(maxA()-1,40);i++){gen++;sampleQ(sh,pts,gen)}gen++;sampleQ(sh,pts,gen);
+big.className='s-'+s+(fl?' flipped':'');const K=BACK[n-1];big.innerHTML=`<div class="fl"><div class="face cell">${inner(n)}${FI}</div><div class="face cell back">${FI}<div><b>How it feels</b><br>${K[0]=='~'?NOFEEL:K[0]}</div><div><b>Name origin</b><br>${K[1]}</div><div><b>Who found it and how</b><br>${K[2]}</div></div></div>`;
+$('sent').textContent=`${nm} has ${n} electron${p}`;
+{const I=INFO[n-1],[sy2,sl]=SF[I.s];$('info').innerHTML=`<b>${nm}</b> <svg class="sf ${I.s}" viewBox="0 0 24 24" role="img" aria-label="${sl}">${SHP[I.s]}</svg><br><b>Earth:</b> ${ER[I.e]} · <b>Universe:</b> ${UR[I.u]}<br><b>Where?</b> ${I.b}<br><b>Fun:</b> ${I.d}`}
+$('pc').innerHTML=pics[n]?`<img src="${pics[n]}" alt="">`:'<span>PICTURE SLOT<br>tap to add an image</span>';sel(n)}
+function size(){const d=Math.min(2,devicePixelRatio||1);[cv,cq].forEach(c=>{c.width=c.clientWidth*d;c.height=c.clientHeight*d})}
+function openEl(n,src){fl=0;render(n);win.classList.add('on');size();
+const a=src.getBoundingClientRect(),z=big.getBoundingClientRect();
+big.style.transition='none';big.style.transform=`translate(${a.left-z.left}px,${a.top-z.top}px) scale(${a.width/z.width},${a.height/z.height})`;
+big.offsetWidth;big.style.transition='transform .45s cubic-bezier(.2,.8,.2,1)';big.style.transform='';
+if(!on){on=1;requestAnimationFrame(draw)}}
+function close(){win.classList.remove('on');on=0}
+$('cl').onclick=close;
+const flip=()=>{fl=fl?0:1;big.classList.toggle('flipped',!!fl)};big.onclick=flip;big.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();flip()}};
+$('pv').onclick=()=>go(-1);$('nx').onclick=()=>go(1);
+[['b3',0],['b2',1]].forEach(([i,v])=>$(i).onclick=()=>{flat=v;$('b3').setAttribute('aria-pressed',!v);$('b2').setAttribute('aria-pressed',!!v)});
+addEventListener('keydown',e=>{if(!on)return;if(e.key=='Escape')close();if(e.key=='ArrowLeft')$('pv').click();if(e.key=='ArrowRight')$('nx').click()});
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;pics[cur]=URL.createObjectURL(f);render(cur)};
+function bohr(t){const W=cv.width,H=cv.height;x1.clearRect(0,0,W,H);atomBohr(x1,W/2,H/2,Math.min(W,H)*.38,sh,cur,t,flat,col,W/cv.clientWidth,true)}
+function quant(){const W=cq.width,H=cq.height;x2.clearRect(0,0,W,H);atomQ(x2,W/2,H/2,Math.min(W,H)*.38,pts,gen,maxA(),col,W/cq.clientWidth,true)}
+function draw(t){if(!on)return;requestAnimationFrame(draw);bohr(t);if(t-lastQ>160){gen++;sampleQ(sh,pts,gen);prune(pts,gen,maxA());lastQ=t;quant()}}
+/* background atoms */
+const bg=$('bg'),bx=bg.getContext('2d');let bgA=[];bg.style.pointerEvents='none';
+function bgSize(){const d=Math.min(2,devicePixelRatio||1);bg.width=vp.clientWidth*d;bg.height=vp.clientHeight*d}
+function mk(){const z=1+Math.floor(Math.random()*10),d=bg.width/(vp.clientWidth||1);
+return{z,s:shells(z),k:Math.random()<.5?'b':'q',fl:Math.random()<.4,x:Math.random()*bg.width,y:Math.random()*bg.height,vx:(Math.random()-.5)*.6*d,vy:(Math.random()-.5)*.6*d,R:(30+Math.random()*34)*d,c:COL[state(z)],P:[],g:0,lt:0,d}}
+function bgLoop(t){requestAnimationFrame(bgLoop);if(on||!bg.width)return;bx.clearRect(0,0,bg.width,bg.height);
+for(const a of bgA){a.vx=Math.max(-.4*a.d,Math.min(.4*a.d,a.vx+(Math.random()-.5)*.02*a.d));a.vy=Math.max(-.4*a.d,Math.min(.4*a.d,a.vy+(Math.random()-.5)*.02*a.d));
+a.x+=a.vx;a.y+=a.vy;const m=a.R*1.1;if(a.x<m||a.x>bg.width-m)a.vx*=-1;if(a.y<m||a.y>bg.height-m)a.vy*=-1;
+bx.globalAlpha=.4;
+if(a.k=='b')atomBohr(bx,a.x,a.y,a.R,a.s,a.z,t+a.z*900,a.fl,a.c,a.d,false);
+else{if(t-a.lt>200){a.g++;sampleQ(a.s,a.P,a.g);prune(a.P,a.g,24);a.lt=t}atomQ(bx,a.x,a.y,a.R,a.P,a.g,24,a.c,a.d,false)}}
+bx.globalAlpha=1}
+addEventListener('resize',()=>{size();bgSize();if(!on)fit()});
+fit();bgSize();bgA=Array.from({length:10},mk);requestAnimationFrame(bgLoop);
+
+/* families */
+const R=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+const FAM=[
+{n:'Everyday Life',k:1,s:8,e:[1,6,7,8,11,13,14,17,20,26,29,30,47,79],d:'These are the elements you meet every day: in the air you breathe, the food you eat and the things you use.'},
+{n:'Noble Gases',k:1,s:2,e:[2,10,18,36,54,86,118],d:'Noble gases are shy. They hardly ever mix with other elements, so they float around alone. Some make glowing signs!'},
+{n:'In Your Body',k:1,s:20,e:[1,6,7,8,11,12,15,16,17,19,20,26,30,53],d:'Your body is built from these elements. Oxygen and carbon are in almost every part of you, and calcium makes your bones strong.'},
+{n:'Money and Jewelry',k:1,s:79,e:[29,46,47,78,79],d:'These shiny metals don’t rust easily, so people use them for coins, rings and jewelry.'},
+{n:'Fireworks Colors',k:1,s:38,e:[3,11,19,20,29,38,56],d:'When some elements get very hot, they glow in bright colors. Fireworks use them to make reds, greens and yellows.'},
+{n:'Alkali Metals',s:11,e:[3,11,19,37,55,87],d:'Alkali metals are soft and shiny, and they react very fast with water. Never touch them!'},
+{n:'Alkaline Earth Metals',s:20,e:[4,12,20,38,56,88],d:'These metals are a little harder than alkali metals. You find them in chalk, bones and fireworks.'},
+{n:'Halogens',s:17,e:[9,17,35,53,85,117],d:'Halogens are very eager to react. Chlorine cleans swimming pools, and iodine is added to salt.'},
+{n:'Metalloids',s:14,e:[5,14,32,33,51,52],d:'Metalloids are part metal and part nonmetal. Silicon, used in computer chips, is the most famous.'},
+{n:'Transition Metals',s:26,e:[...R(21,30),...R(39,48),...R(72,80),...R(104,112)],d:'These are the strong, shiny metals in the middle of the table, like iron, copper and gold.'},
+{n:'Other Metals',s:13,e:[13,31,49,50,81,82,83,84],d:'These softer metals sit next to the metalloids. Aluminum foil and tin cans are made from them.'},
+{n:'Life Builders',s:6,e:[1,6,7,8,15,16,34],d:'Life builders are nonmetals that make up living things. Carbon is in everything alive.'},
+{n:'Rare Earths',s:60,e:R(57,71),d:'Rare earths aren’t really rare. They make strong magnets and bright colors in screens.'},
+{n:'Radioactive Giants',s:92,e:R(89,103),d:'Radioactive elements give off invisible energy and slowly change into other elements. Uranium makes power.'},
+{n:'Made in Labs',s:94,e:[43,61,...R(93,118)],d:'People make these elements in labs by smashing atoms together. Most last only seconds.'}];
+let act=null;
+FAM.forEach(f=>{const b=document.createElement('button');b.textContent=f.n;b.setAttribute('aria-pressed','false');b.onclick=()=>pick(act===f?null:f);f.b=b;(f.k?$('fam'):$('sci')).appendChild(b)});
+const sb=document.createElement('button');sb.textContent='Scientific ▾';sb.setAttribute('aria-expanded','false');
+sb.onclick=()=>{const h=$('sci').hidden=!$('sci').hidden;sb.textContent=h?'Scientific ▾':'Scientific ▴';sb.setAttribute('aria-expanded',!h);fit()};
+$('fam').appendChild(sb);
+function pick(f){act=f;FAM.forEach(g=>g.b.setAttribute('aria-pressed',g===f));
+tb.querySelectorAll('.cell[data-n]').forEach(c=>{const n=+c.dataset.n;c.classList.toggle('fade',!!f&&!f.e.includes(n));c.classList.toggle('star',!!f&&n==f.s)});
+tb.querySelectorAll('.ph').forEach(c=>c.classList.toggle('fade',!!f));
+$('desc').hidden=!f;
+if(f){const[sy,nm]=D[f.s-1].split(' ');$('dt').textContent=f.n;$('ds').textContent='★ Best-known element: '+nm+' ('+sy+')';$('dp').textContent=f.d}
+fit()}
+$('dx').onclick=()=>pick(null);
+function go(d){const L=act?act.e:null;if(!L){render(d<0?(cur==1?118:cur-1):(cur==118?1:cur+1));return}
+let i=L.indexOf(cur);i=i<0?0:(i+d+L.length)%L.length;render(L[i])}
+</script>
+</body></html>
