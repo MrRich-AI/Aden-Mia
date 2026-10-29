@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zoomable USA Map</title>
+<style>
+:root{--sea:#dfe9ee;--land:#f2ecdc;--line:#7b8a8f;--hi:#e0b25a;--ink:#23323a;--panel:#fffdf6;--edge:#b9c4c8;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sea:#14202a;--land:#2b3a43;--line:#5d727c;--hi:#c9953a;--ink:#e6edf0;--panel:#1c2a33;--edge:#3b4d57}}
+:root[data-theme="dark"]{--sea:#14202a;--land:#2b3a43;--line:#5d727c;--hi:#c9953a;--ink:#e6edf0;--panel:#1c2a33;--edge:#3b4d57}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman",serif;overflow:hidden}
+#map{position:absolute;inset:0;touch-action:none;cursor:grab}
+#map:active{cursor:grabbing}
+.datamaps-subunit{vector-effect:non-scaling-stroke}
+.datamaps-subunit path,path.datamaps-subunit{vector-effect:non-scaling-stroke}
+.ctx path{fill:var(--land);fill-opacity:.3;stroke:var(--line);stroke-opacity:.3;stroke-width:.6;vector-effect:non-scaling-stroke;pointer-events:none}
+.bar{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 10px);background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:8px 12px;max-width:70vw}
+.bar h1{font-size:17px;margin:0}
+.bar p{font:13px/1.3 system-ui,sans-serif;margin:3px 0 0;opacity:.8}
+.ctl{position:absolute;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;flex-direction:column;gap:6px}
+.ctl button{width:44px;height:44px;font:22px system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--edge);border-radius:6px;cursor:pointer}
+.ctl button:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="bar"><h1 id="name">United States</h1><p id="hint">Pinch, scroll or double-click to zoom. Drag to pan. Tap a state for its name.</p></div>
+<div class="ctl"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">&minus;</button><button id="zr" aria-label="Reset view">&#8634;</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.9/datamaps.world.hires.min.js"></script>
+<script>window.WorldTopo=window.Datamap&&Datamap.prototype.worldTopo;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.9/datamaps.usa.min.js"></script>
+<script>
+(function(){
+  var css=function(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();};
+  var topo=Datamap.prototype.usaTopo, WT=window.WorldTopo, U=1000, map, svg, zoom, curP;
+  var NA={CAN:1,MEX:1,GTM:1,BLZ:1,SLV:1,HND:1,NIC:1,CRI:1,PAN:1,CUB:1,JAM:1,HTI:1,DOM:1,BHS:1,PRI:1,TTO:1,BRB:1,LCA:1,VCT:1,GRD:1,ATG:1,KNA:1,DMA:1,CYM:1,TCA:1,VGB:1,VIR:1,AIA:1,MSR:1,GLP:1,MTQ:1,BMU:1,GRL:1,SPM:1,ABW:1,CUW:1,BES:1,SXM:1,MAF:1,BLM:1};
+  function isHI(d){return d&&(d.id==='HI'||(d.properties&&d.properties.name==='Hawaii'));}
+  // One Lambert azimuthal equal-area projection centred on North America (100°W, 45°N): Alaska and Hawaii keep the lower 48's scale.
+  // Alaska and Hawaii both sit at their true positions.
+  function build(el){
+    var w=el.offsetWidth,h=el.offsetHeight;
+    var mk=function(){return d3.geo.azimuthalEqualArea().rotate([100,-45]).scale(U).translate([0,0]);};
+    var P=mk(), c=P([-118.3,33.9]), hw=P([-157.0,20.5]);
+    var dx=0, dy=0;
+    var pm=d3.geo.path().projection(P), ph=d3.geo.path().projection(mk().translate([dx,dy]));
+    var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    topojson.feature(topo,topo.objects.usa).features.forEach(function(f){
+      var b=(isHI(f)?ph:pm).bounds(f);
+      x0=Math.min(x0,b[0][0]);y0=Math.min(y0,b[0][1]);x1=Math.max(x1,b[1][0]);y1=Math.max(y1,b[1][1]);
+    });
+    var k=0.94/Math.max((x1-x0)/w,(y1-y0)/h), t=[(w-k*(x0+x1))/2,(h-k*(y0+y1))/2];
+    var Pm=d3.geo.azimuthalEqualArea().rotate([100,-45]).scale(U*k).translate(t);
+    var Ph=d3.geo.azimuthalEqualArea().rotate([100,-45]).scale(U*k).translate([t[0]+dx*k,t[1]+dy*k]);
+    var pM=d3.geo.path().projection(Pm), pH=d3.geo.path().projection(Ph);
+    var pick=function(d){return isHI(d)?pH:pM;};
+    var f=function(d,i){return pick(d)(d,i);};
+    ['centroid','bounds','area'].forEach(function(n){f[n]=function(d){return pick(d)[n](d);};});
+    f.projection=function(){return Pm;};
+    curP=Pm;
+    return {path:f,projection:Pm};
+  }
+  function init(){
+    var el=document.getElementById('map'); el.innerHTML='';
+    map=new Datamap({
+      element:el, scope:'usa', responsive:false, setProjection:build,
+      fills:{defaultFill:css('--land')},
+      geographyConfig:{borderColor:css('--line'),borderWidth:0.8,highlightFillColor:css('--hi'),highlightBorderColor:css('--ink'),popupOnHover:false,highlightOnHover:true}
+    });
+    svg=map.svg;
+    if(WT){
+      var lp=d3.geo.path().projection(curP);
+      var cf=topojson.feature(WT,WT.objects.world).features.filter(function(f){return NA[f.id];});
+      svg.insert('g',':first-child').attr('class','ctx').selectAll('path').data(cf).enter().append('path').attr('d',lp);
+    }
+    zoom=d3.behavior.zoom().scaleExtent([1,60]).on('zoom',function(){
+      svg.selectAll('g').attr('transform','translate('+d3.event.translate+')scale('+d3.event.scale+')');
+    });
+    svg.call(zoom);
+    svg.selectAll('.datamaps-subunit').on('click',function(g){
+      document.getElementById('name').textContent=g.properties.name;
+    });
+  }
+  function step(f){
+    var r=document.getElementById('map').getBoundingClientRect(),k=zoom.scale(),k2=Math.max(1,Math.min(60,k*f)),t=zoom.translate(),c=[r.width/2,r.height/2];
+    var x=(c[0]-t[0])/k,y=(c[1]-t[1])/k;
+    zoom.scale(k2).translate([c[0]-x*k2,c[1]-y*k2]);
+    zoom.event(svg.transition().duration(300));
+  }
+  document.getElementById('zi').onclick=function(){step(2);};
+  document.getElementById('zo').onclick=function(){step(0.5);};
+  document.getElementById('zr').onclick=function(){
+    zoom.scale(1).translate([0,0]);zoom.event(svg.transition().duration(400));
+    document.getElementById('name').textContent='United States';
+  };
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(init,200);});
+  init();
+})();
+</script>
+</body>
+</html>
