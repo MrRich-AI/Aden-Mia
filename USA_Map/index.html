@@ -54,11 +54,47 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
 .ctl{position:absolute;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;flex-direction:column;gap:6px}
 .ctl button{width:44px;height:44px;font:22px system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--edge);border-radius:6px;cursor:pointer}
 .ctl button:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+/* ---- State card (flag-colour style): fixed 1200x800 design, scaled to fit the screen ---- */
+#cardov{position:fixed;inset:0;z-index:50}
+#cardov .cbk{position:absolute;inset:0;background:rgba(10,18,24,.62);animation:cfade .25s ease}
+#cardov .csc{position:absolute;left:50%;top:50%;width:1200px;height:800px;transform-origin:center}
+.card{--c1:#002868;--c2:#bf0a30;width:1200px;height:800px;display:grid;grid-template-columns:1fr 1fr;background:#fff;border:10px solid var(--c1);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.45);animation:cpop .32s cubic-bezier(.2,1.3,.4,1);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.card .ccol{display:grid;grid-template-rows:1fr 1fr;min-height:0;min-width:0}
+.card .ccol.l{background:var(--c1)}
+.card .cphoto{position:relative;overflow:hidden;border:8px solid var(--c1);min-height:0}
+.card .cphoto svg{width:100%;height:100%;display:block}
+.card .ctag{position:absolute;left:10px;bottom:10px;font:600 12px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.6);color:#fff;padding:5px 9px;border-radius:4px}
+.card .cinfo{padding:22px 30px;display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0;overflow:hidden}
+.card .l .cinfo{color:#fff}
+.card .r .cinfo{color:var(--c1);border-bottom:16px solid var(--c2)}
+.card .cab{font:900 20px Inter,system-ui,sans-serif;letter-spacing:.4em;color:var(--ab)}
+.card .cname{margin:0;font-size:96px;line-height:1.04;color:var(--c1);overflow-wrap:normal;word-break:keep-all;flex:none}
+.card .cflag{flex:0 0 25%;min-height:0;display:flex;align-items:center}
+.card .cflag img{height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.18);background:#fff}
+.card .cflag .cbars{height:100%;aspect-ratio:3/2;background:linear-gradient(var(--c1) 0 50%,var(--c2) 50% 100%);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.card .clbl{font:800 12px Inter,system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--c2)}
+.card .l .clbl{color:#fff}
+.card .cph{display:flex;flex-direction:column;gap:9px}
+.card .cph i{display:block;height:12px;border-radius:6px;opacity:.3;background:currentColor}
+.card .cph i:nth-child(2){width:82%}.card .cph i:nth-child(3){width:91%}.card .cph i:nth-child(4){width:64%}
+.card .cmap{background:var(--c2);padding:12px;display:grid;place-items:center;position:relative;min-height:0;overflow:hidden}
+.card .cmw{position:relative}
+.card .cmw img,.card .cmw svg.out{width:100%;height:100%;display:block}
+.card .cmw svg.out{background:#c4dbe8}
+.card .cstar{position:absolute;width:30px;height:30px;transform:translate(-50%,-50%)}
+.card .ccap{position:absolute;transform:translate(18px,-50%);font:italic 700 15px Georgia,serif;color:#1d2a30;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+.card .ccap.lft{transform:translate(calc(-100% - 18px),-50%)}
+.card .cwait{font:600 14px Inter,system-ui,sans-serif;color:var(--on2)}
+.card .ccred{position:absolute;right:8px;bottom:6px;font:600 10px Inter,system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.5);padding:2px 6px;border-radius:3px}
+.card .cx{position:absolute;right:18px;top:16px;width:44px;height:44px;border-radius:50%;border:0;background:var(--c2);color:var(--on2);font:800 24px/1 Inter,system-ui,sans-serif;cursor:pointer;z-index:3;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.card .cx:focus-visible{outline:3px solid var(--c1);outline-offset:2px}
+@keyframes cpop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes cfade{from{opacity:0}}
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div class="bar"><h1 id="name">United States</h1><p id="hint">Pinch or scroll to zoom. Drag to pan. Tap a state to select it. Double-tap outside the USA to clear.</p></div>
+<div class="bar"><h1 id="name">United States</h1><p id="hint">Pinch or scroll to zoom. Drag to pan. Tap a state to select it. Double-tap it for its card. Double-tap outside the USA to clear.</p></div>
 <div class="ctl"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">&minus;</button><button id="zr" aria-label="Reset view">&#8634;</button></div>
 <div class="side">
 <details class="opts"><summary>Territories</summary>
@@ -78,6 +114,7 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
 <div class="fb" id="qfb"></div>
 <div class="row"><span id="qscore"></span><span><button id="qnext" hidden>Next</button> <button id="qexit">Exit</button></span></div>
 </div>
+<div id="cardov" hidden><div class="cbk"></div><div class="csc" role="dialog" aria-modal="true" aria-labelledby="cname"></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.9/datamaps.world.hires.min.js"></script>
@@ -154,8 +191,8 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
       if(quiz.on){if(st)answer(st);return;}
       var key=st?'s:'+st.id:tk?'t:'+tk:'out',now=Date.now(),dbl=last.key===key&&now-last.t<450&&Math.abs(e.clientX-last.x)+Math.abs(e.clientY-last.y)<30;
       last=dbl?{key:null,t:0,x:0,y:0}:{key:key,t:now,x:e.clientX,y:e.clientY};
-      if(st){choose({type:'s',id:st.id,name:st.properties.name,f:st});if(dbl)openCard(st);}
-      else if(tk){var td=TDK[tk];choose({type:'t',id:tk,name:td.n});}
+      if(st){choose({type:'s',id:st.id,name:st.properties.name,f:st});if(dbl)openCard(st.id);}
+      else if(tk){var td=TDK[tk];choose({type:'t',id:tk,name:td.n});if(dbl)openCard(tk.toUpperCase());}
       else if(dbl)choose(null);
     });
     if(cur)choose(cur);
@@ -175,7 +212,196 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
     } else if(s){svg.selectAll('.terr [data-t="'+s.id+'"]').filter('.mk,path').classed('on',true);}
     paint();scaleUI();
   }
-  function openCard(st){ /* state card — design being chosen */ }
+  // ---- State cards ----
+  // id: [name, capital, lat, lon, name font (Google Fonts, each used once), weight, flag colour 1 (frame), flag colour 2 (accent)]
+  var CD={
+   AL:['Alabama','Montgomery',32.377,-86.300,'Fraunces',900,'#8f1d2c','#c9a227'],
+   AK:['Alaska','Juneau',58.302,-134.420,'Alfa Slab One',400,'#0f204b','#ffb81c'],
+   AZ:['Arizona','Phoenix',33.448,-112.074,'Bungee',400,'#002868','#ce5c17'],
+   AR:['Arkansas','Little Rock',34.746,-92.290,'Archivo Black',400,'#a50f2d','#1f3a8a'],
+   CA:['California','Sacramento',38.576,-121.494,'Pacifico',400,'#9b1b30','#5b7f3a'],
+   CO:['Colorado','Denver',39.739,-104.990,'Bowlby One',400,'#002868','#ffd200'],
+   CT:['Connecticut','Hartford',41.764,-72.682,'Cinzel',800,'#0b3d91','#d4af37'],
+   DE:['Delaware','Dover',39.158,-75.524,'DM Serif Display',400,'#2e5b9a','#e0c38c'],
+   FL:['Florida','Tallahassee',30.438,-84.281,'Righteous',400,'#b5121b','#2a6fb5'],
+   GA:['Georgia','Atlanta',33.749,-84.388,'Lobster',400,'#002868','#bf0a30'],
+   HI:['Hawaii','Honolulu',21.307,-157.858,'Fredoka',700,'#012169','#c8102e'],
+   ID:['Idaho','Boise',43.615,-116.202,'Black Ops One',400,'#002868','#d4a017'],
+   IL:['Illinois','Springfield',39.798,-89.654,'Space Grotesk',700,'#1b3a6b','#b5862b'],
+   IN:['Indiana','Indianapolis',39.768,-86.158,'Bangers',400,'#002868','#e8b923'],
+   IA:['Iowa','Des Moines',41.586,-93.625,'Bree Serif',400,'#002868','#bf0a30'],
+   KS:['Kansas','Topeka',39.048,-95.678,'Chewy',400,'#002868','#ffd200'],
+   KY:['Kentucky','Frankfort',38.201,-84.873,'Arvo',700,'#1f3c88','#d4af37'],
+   LA:['Louisiana','Baton Rouge',30.451,-91.187,'Courgette',400,'#002868','#d4af37'],
+   ME:['Maine','Augusta',44.311,-69.780,'Merriweather',900,'#14326e','#d4af37'],
+   MD:['Maryland','Annapolis',38.978,-76.492,'Libre Baskerville',700,'#1a1a1a','#e8b116'],
+   MA:['Massachusetts','Boston',42.360,-71.058,'Cormorant Garamond',700,'#14326e','#e3b23c'],
+   MI:['Michigan','Lansing',42.733,-84.555,'Montserrat',800,'#002868','#c9a227'],
+   MN:['Minnesota','Saint Paul',44.954,-93.090,'Bebas Neue',400,'#002d5d','#52c9e8'],
+   MS:['Mississippi','Jackson',32.299,-90.185,'Luckiest Guy',400,'#002e6d','#bf0a30'],
+   MO:['Missouri','Jefferson City',38.577,-92.173,'Passion One',700,'#a50f2d','#1f3a8a'],
+   MT:['Montana','Helena',46.589,-112.039,'Holtwood One SC',400,'#002868','#ffd200'],
+   NE:['Nebraska','Lincoln',40.814,-96.703,'Rubik Mono One',400,'#002868','#d4af37'],
+   NV:['Nevada','Carson City',39.164,-119.767,'Limelight',400,'#003da5','#f2b630'],
+   NH:['New Hampshire','Concord',43.207,-71.538,'Spectral',800,'#002868','#d4af37'],
+   NJ:['New Jersey','Trenton',40.221,-74.756,'Josefin Sans',700,'#2c4f8a','#e3c48d'],
+   NM:['New Mexico','Santa Fe',35.687,-105.938,'Sigmar One',400,'#b5121b','#ffd700'],
+   NY:['New York','Albany',42.653,-73.757,'Playfair Display',900,'#002868','#e8b116'],
+   NC:['North Carolina','Raleigh',35.780,-78.639,'Permanent Marker',400,'#002868','#bf0a30'],
+   ND:['North Dakota','Bismarck',46.808,-100.784,'Orbitron',800,'#002868','#d4af37'],
+   OH:['Ohio','Columbus',39.961,-82.999,'Titan One',400,'#a50f2d','#1f3a8a'],
+   OK:['Oklahoma','Oklahoma City',35.468,-97.516,'Lilita One',400,'#2f5f97','#c9a227'],
+   OR:['Oregon','Salem',44.943,-123.035,'Caveat Brush',400,'#002868','#ffcc00'],
+   PA:['Pennsylvania','Harrisburg',40.264,-76.884,'Old Standard TT',700,'#002868','#d4af37'],
+   RI:['Rhode Island','Providence',41.824,-71.413,'Special Elite',400,'#23397a','#d4af37'],
+   SC:['South Carolina','Columbia',34.000,-81.035,'Kalam',700,'#002f6c','#8fb6e0'],
+   SD:['South Dakota','Pierre',44.368,-100.351,'Changa One',400,'#1f5fa8','#f2b630'],
+   TN:['Tennessee','Nashville',36.163,-86.781,'Shrikhand',400,'#a50f2d','#1f3a8a'],
+   TX:['Texas','Austin',30.267,-97.743,'Rye',400,'#002868','#bf0a30'],
+   UT:['Utah','Salt Lake City',40.761,-111.891,'Press Start 2P',400,'#1e3264','#e0a526'],
+   VT:['Vermont','Montpelier',44.260,-72.575,'Vollkorn',900,'#003f87','#6aa84f'],
+   VA:['Virginia','Richmond',37.541,-77.436,'IM Fell English',400,'#002868','#c8102e'],
+   WA:['Washington','Olympia',47.038,-122.900,'Signika',700,'#1e6b35','#e8b116'],
+   WV:['West Virginia','Charleston',38.350,-81.633,'Alegreya',900,'#1d4f91','#e8b116'],
+   WI:['Wisconsin','Madison',43.073,-89.401,'Paytone One',400,'#002868','#d4af37'],
+   WY:['Wyoming','Cheyenne',41.140,-104.820,'Bevan',400,'#002868','#bf0a30'],
+   DC:['Washington, D.C.','U.S. Capitol',38.8899,-77.0091,'Raleway',900,'#b5121b','#3a3a3a'],
+   PR:['Puerto Rico','San Juan',18.466,-66.106,'Yellowtail',400,'#0050a8','#e4002b'],
+   GU:['Guam','Hagåtña',13.476,144.749,'Grandstander',800,'#0b2d6b','#c8102e'],
+   VI:['U.S. Virgin Islands','Charlotte Amalie',18.342,-64.931,'Kurale',400,'#1d4f91','#f2c230'],
+   MP:['Northern Mariana Islands','Saipan',15.212,145.754,'Sansita',800,'#0071bc','#9c8b6e'],
+   AS:['American Samoa','Pago Pago',-14.279,-170.700,'Carter One',400,'#00205b','#c8102e']
+  };
+  // Wikipedia location-map module names to try, and flag file names, where they don't follow "USA <name>" / "Flag of <name>.svg".
+  var MODS={DC:['USA District of Columbia','USA Washington, D.C.','Washington, D.C.'],PR:['Puerto Rico','USA Puerto Rico'],GU:['Guam'],
+    VI:['United States Virgin Islands','U.S. Virgin Islands','USA United States Virgin Islands'],MP:['Northern Mariana Islands'],AS:['American Samoa']};
+  var FLAGS={GA:'Flag of Georgia (U.S. state).svg',DC:'Flag of Washington, D.C..svg',VI:'Flag of the United States Virgin Islands.svg',MP:'Flag of the Northern Mariana Islands.svg'};
+  var TISO={DC:'',PR:'PRI',GU:'GUM',VI:'VIR',MP:'MNP',AS:'ASM'};
+  var cardEl=document.getElementById('cardov'),cardBox=cardEl.querySelector('.csc'),cardOn=null,mdCache={};
+  function lum(h){var n=parseInt(h.slice(1),16),c=[n>>16,n>>8&255,n&255].map(function(v){v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.2);});return .2126*c[0]+.7152*c[1]+.0722*c[2];}
+  function fp(file,w){return 'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(file.replace(/ /g,'_'))+'?width='+w;}
+  function scaleCard(){var k=Math.min(window.innerWidth*0.96/1200,window.innerHeight*0.94/800);cardBox.style.transform='translate(-50%,-50%) scale('+k+')';}
+  function openCard(id){
+    var c=CD[id];if(!c)return;cardOn=id;
+    var nm=c[0],light2=lum(c[7])>0.45;
+    var star='<svg class="cstar" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="13" fill="#e0b25a" stroke="#1d2a30" stroke-width="2"/><path fill="#1d2a30" d="'+starPath(9,3.8)+'"/></svg>';
+    var ph='<div class="cph"><i></i><i></i><i></i><i></i></div>';
+    cardBox.innerHTML='<div class="card" style="--c1:'+c[6]+';--c2:'+c[7]+';--ab:'+(light2?c[6]:c[7])+';--on2:'+(light2?'#14202a':'#fff')+'">'+
+      '<div class="ccol l"><div class="cphoto">'+photoSVG()+'<span class="ctag">Photo coming soon</span></div>'+
+      '<div class="cinfo"><span class="clbl">Info</span>'+ph+ph+'</div></div>'+
+      '<div class="ccol r"><div class="cinfo"><span class="cab">'+id+'</span><h2 class="cname" id="cname">'+nm+'</h2>'+
+      '<div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),480)+'"></div><span class="clbl">Info</span>'+ph+'</div>'+
+      '<div class="cmap"><span class="cwait">Loading map…</span></div></div>'+
+      '<button class="cx" aria-label="Close">\u00d7</button></div>';
+    var fi=cardBox.querySelector('.cflag img');fi.onerror=function(){fi.outerHTML='<div class="cbars" aria-hidden="true"></div>';};
+    cardBox.querySelector('.cx').onclick=closeCard;
+    cardEl.hidden=false;scaleCard();
+    var h=cardBox.querySelector('.cname');h.style.fontFamily='"'+c[4]+'",Georgia,serif';h.style.fontWeight=c[5];
+    fitName(h);loadFont(c,function(){if(cardOn===id)fitName(h);});
+    loadMap(id,c,star);
+    cardBox.querySelector('.cx').focus();
+  }
+  function closeCard(){cardEl.hidden=true;cardBox.innerHTML='';cardOn=null;}
+  cardEl.querySelector('.cbk').onclick=closeCard;
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&cardOn)closeCard();});
+  window.addEventListener('resize',function(){if(cardOn)scaleCard();});
+  function starPath(r1,r2){var s='';for(var i=0;i<10;i++){var a=-Math.PI/2+i*Math.PI/5,r=i%2?r2:r1;s+=(i?'L':'M')+(r*Math.cos(a)).toFixed(2)+','+(r*Math.sin(a)).toFixed(2);}return s+'Z';}
+  // Largest size (up to 96px) at which the name fits the panel width in at most two lines.
+  function fitName(h){
+    var W=h.parentNode.clientWidth-60-56,s=96;h.style.maxWidth=W+'px';
+    h.style.fontSize=s+'px';
+    while(s>26&&(h.scrollWidth>W+1||h.offsetHeight>s*1.04*2+4||h.offsetHeight>124)){s-=2;h.style.fontSize=s+'px';}
+  }
+  // Each name font is fetched from Google Fonts only when its card opens, trimmed to just the letters in that name.
+  function loadFont(c,done){
+    var fid='gf-'+c[4].replace(/\W/g,''),l=document.getElementById(fid),go=function(){if(document.fonts&&document.fonts.load)document.fonts.load(c[5]+' 80px "'+c[4]+'"',c[0]).then(done,done);else done();};
+    if(l){l.dataset.ok?go():l.addEventListener('load',go);return;}
+    l=document.createElement('link');l.id=fid;l.rel='stylesheet';
+    l.href='https://fonts.googleapis.com/css2?family='+c[4].replace(/ /g,'+')+(c[5]!==400?':wght@'+c[5]:'')+'&display=swap&text='+encodeURIComponent(c[0]);
+    l.onload=function(){l.dataset.ok=1;go();};document.head.appendChild(l);
+  }
+  // Map: Wikipedia's location-map data for the place gives the relief image and its edges, so the capital star lands in the right spot.
+  function loadMap(id,c,star){
+    var box=cardBox.querySelector('.cmap'),mods=MODS[id]||['USA '+c[0]],done=0;
+    var fail=function(){if(done||cardOn!==id)return;done=1;outline(id,c,box,star);};
+    var t=setTimeout(fail,9000);
+    var got=function(md){
+      var file=md&&(md.image1||md.image);if(!file){clearTimeout(t);fail();return;}
+      var img=new Image(),tried=0;
+      img.onload=function(){
+        if(done||cardOn!==id)return;done=1;clearTimeout(t);
+        var bw=box.clientWidth-24,bh=box.clientHeight-24,k=Math.min(bw/img.naturalWidth,bh/img.naturalHeight);
+        box.innerHTML='<div class="cmw" style="width:'+Math.round(img.naturalWidth*k)+'px;height:'+Math.round(img.naturalHeight*k)+'px"></div><span class="ccred">Map: Wikimedia Commons</span>';
+        var w=box.firstChild;img.alt='Map of '+c[0];w.appendChild(img);
+        var p=place(md,c[2],c[3]);
+        if(p)w.insertAdjacentHTML('beforeend','<div style="position:absolute;left:'+p[0]+'%;top:'+p[1]+'%">'+star.replace('class="cstar"','class="cstar" style="left:0;top:0"')+'<span class="ccap'+(p[0]>72?' lft':'')+'">'+c[1]+'</span></div>');
+      };
+      img.onerror=function(){if(!tried++)img.src='https://en.wikipedia.org/wiki/Special:FilePath/'+encodeURIComponent(file.replace(/ /g,'_'))+'?width=1000';else{clearTimeout(t);fail();}};
+      img.src=fp(file,1000);
+    };
+    if(mdCache[id]!==undefined){got(mdCache[id]);return;}
+    var titles=mods.map(function(m){return 'Module:Location map/data/'+m;});
+    fetch('https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&format=json&formatversion=2&origin=*&titles='+encodeURIComponent(titles.join('|')))
+      .then(function(r){return r.json();})
+      .then(function(j){
+        var pages={};((j.query&&j.query.pages)||[]).forEach(function(pg){if(pg.revisions)pages[pg.title]=pg.revisions[0].slots.main.content;});
+        for(var i=0;i<titles.length;i++)if(pages[titles[i]])return pages[titles[i]];
+        return null;
+      })
+      .then(function(src){
+        // A module can just point at another one ("return require('Module:Location map/data/…')"); follow that once.
+        var m=src&&src.match(/require\s*\(\s*['"](Module:Location map\/data\/[^'"]+)['"]/);
+        if(!m)return src;
+        return fetch('https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&format=json&formatversion=2&origin=*&titles='+encodeURIComponent(m[1]))
+          .then(function(r){return r.json();}).then(function(j){var pg=j.query&&j.query.pages&&j.query.pages[0];return pg&&pg.revisions?pg.revisions[0].slots.main.content:null;});
+      })
+      .then(function(src){var md=src?parseMod(src):null;mdCache[id]=md;got(md);})
+      .catch(function(){clearTimeout(t);fail();});
+  }
+  function parseMod(s){
+    var n=function(k){var m=s.match(new RegExp('\\b'+k+'\\s*=\\s*(-?[0-9.]+)'));return m?+m[1]:null;};
+    var q=function(k){var m=s.match(new RegExp('\\b'+k+'\\s*=\\s*([\'"])((?:(?!\\1).)*)\\1'));return m?m[2]:null;};
+    return {top:n('top'),bottom:n('bottom'),left:n('left'),right:n('right'),image:q('image'),image1:q('image1'),x:q('x'),y:q('y')};
+  }
+  // Position as % of the image. Uses the module's own x/y formula when it has one, else its edge coordinates.
+  function place(md,lat,lon){
+    var ok=function(p){return p&&isFinite(p[0])&&isFinite(p[1])&&p[0]>-2&&p[0]<102&&p[1]>-2&&p[1]<102?p:null;};
+    if(md.x&&md.y){var p=ok([expr(md.x,lat,lon),expr(md.y,lat,lon)]);if(p)return p;}
+    if([md.top,md.bottom,md.left,md.right].some(function(v){return v===null;}))return null;
+    var L=md.left,R=md.right,lo=lon;if(L>R){R+=360;if(lo<0)lo+=360;}
+    return ok([(lo-L)/(R-L)*100,(md.top-lat)/(md.top-md.bottom)*100]);
+  }
+  // Wikipedia's #expr formulas ({{{2}}} = longitude, {{{3}}} = latitude) turned into plain arithmetic; anything else is refused.
+  function expr(e,lat,lon){
+    var s=e.replace(/\{\{\{2\}\}\}/g,'('+lon+')').replace(/\{\{\{3\}\}\}/g,'('+lat+')')
+      .replace(/\bmod\b/g,'%').replace(/\bdiv\b/g,'/').replace(/\^/g,'**').replace(/\bpi\b/g,'Math.PI').replace(/\bln\b/g,'Math.log')
+      .replace(/\b(asin|acos|atan|sin|cos|tan|sqrt|abs|exp|floor|ceil|trunc)\b/g,'Math.$1');
+    if(!/^[\d\s.+\-*/%()eE]*$/.test(s.replace(/Math\.(PI|log|asin|acos|atan|sin|cos|tan|sqrt|abs|exp|floor|ceil|trunc)/g,'')))return NaN;
+    try{return Function('return ('+s+');')();}catch(x){return NaN;}
+  }
+  // Offline / not found: draw the outline from the map's own data instead.
+  function outline(id,c,box,star){
+    var f=null;
+    if(TISO[id])f=WT&&topojson.feature(WT,WT.objects.world).features.filter(function(g){return g.id===TISO[id];})[0];
+    else f=topojson.feature(topo,topo.objects.usa).features.filter(function(g){return g.id===id;})[0];
+    var bw=box.clientWidth-24,bh=box.clientHeight-24;
+    if(!f){box.innerHTML='<span class="cwait">Map unavailable</span>';return;}
+    var cen=d3.geo.centroid(f),P=d3.geo.mercator().rotate([-cen[0],0]).scale(1).translate([0,0]),pa=d3.geo.path().projection(P),b=pa.bounds(f);
+    var k=0.86/Math.max((b[1][0]-b[0][0])/bw,(b[1][1]-b[0][1])/bh);
+    P.scale(k).translate([bw/2-k*(b[0][0]+b[1][0])/2,bh/2-k*(b[0][1]+b[1][1])/2]);
+    var cp=P([c[3],c[2]]);
+    box.innerHTML='<div class="cmw" style="width:'+bw+'px;height:'+bh+'px"><svg class="out" viewBox="0 0 '+bw+' '+bh+'"><path d="'+pa(f)+'" fill="#f7f1e1" stroke="'+c[6]+'" stroke-width="2.5" stroke-linejoin="round"/></svg>'+
+      '<div style="position:absolute;left:'+cp[0]+'px;top:'+cp[1]+'px">'+star.replace('class="cstar"','class="cstar" style="left:0;top:0"')+'<span class="ccap'+(cp[0]>bw*0.72?' lft':'')+'">'+c[1]+'</span></div></div><span class="ccred">Simple outline (map didn\u2019t load)</span>';
+  }
+  // Placeholder picture until the real photos are chosen.
+  function photoSVG(){
+    var h='';for(var i=0;i<220;i++){var x=Math.random()*600,y=282+Math.pow(Math.random(),.7)*118;h+='<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+(1.5+(y-280)/40).toFixed(1)+'" ry="'+(3+(y-280)/22).toFixed(1)+'"/>';}
+    return '<svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="csky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b7fb8"/><stop offset=".55" stop-color="#f2a65a"/><stop offset=".8" stop-color="#fbd38d"/></linearGradient>'+
+      '<radialGradient id="csun" cx="0.72" cy="0.58" r="0.25"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></radialGradient></defs>'+
+      '<rect width="600" height="400" fill="url(#csky)"/><rect width="600" height="400" fill="url(#csun)"/><circle cx="432" cy="232" r="26" fill="#fff4d0"/>'+
+      '<path d="M0 250 Q120 228 240 246 T480 238 T600 244 V400 H0Z" fill="#6c7d4a"/><path d="M0 285 Q150 262 300 280 T600 272 V400 H0Z" fill="#4f6a37"/>'+
+      '<g fill="#3b5bc4" opacity=".9">'+h+'</g><g fill="#22321c"><rect x="118" y="196" width="9" height="78"/><ellipse cx="122" cy="190" rx="58" ry="30"/><ellipse cx="96" cy="206" rx="30" ry="16"/><ellipse cx="152" cy="204" rx="32" ry="16"/></g></svg>';
+  }
   // Label point: centre of the state's biggest piece, with hand-placed spots for awkward shapes.
   var LBP={FL:[-81.6,28.3],LA:[-92.4,31.1],MI:[-84.7,43.5],MD:[-76.9,39.4],AK:[-152,64.2],HI:[-155.5,19.7],ID:[-114.7,44.3],KY:[-85.2,37.6],VA:[-78.6,37.6],NY:[-75.3,42.9],MA:[-71.9,42.35],NJ:[-74.6,40.1],WV:[-80.6,38.7],OK:[-97.4,35.5],TX:[-99.2,31.3],CA:[-119.8,37.2],DE:[-75.5,39.0],RI:[-71.55,41.65],CT:[-72.7,41.6],NH:[-71.6,43.5],VT:[-72.7,44.0],ME:[-69.2,45.2],MN:[-94.3,46.0],NC:[-79.2,35.55],TN:[-86.3,35.85]};
   function labelAt(f){
