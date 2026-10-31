@@ -69,9 +69,15 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
 .card .r .cinfo{color:var(--c1);border-bottom:16px solid var(--c2)}
 .card .cab{font:900 20px Inter,system-ui,sans-serif;letter-spacing:.4em;color:var(--ab)}
 .card .cname{margin:0;font-size:96px;line-height:1.04;color:var(--c1);overflow-wrap:normal;word-break:keep-all;flex:none}
-.card .cflag{flex:0 0 25%;min-height:0;display:flex;align-items:center}
-.card .cflag img{height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.18);background:#fff}
-.card .cflag .cbars{height:100%;aspect-ratio:3/2;background:linear-gradient(var(--c1) 0 50%,var(--c2) 50% 100%);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.card .r .cinfo{gap:8px}
+.card .crow{flex:1 1 auto;min-height:0;display:flex;gap:20px;align-items:flex-start}
+.card .cflag{flex:0 0 150px;height:100px;display:flex;align-items:flex-start}
+.card .cflag img{max-height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.18);background:#fff}
+.card .cflag .cbars{width:100%;aspect-ratio:3/2;background:linear-gradient(var(--c1) 0 50%,var(--c2) 50% 100%);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.card .cfacts{flex:1 1 auto;min-width:0;margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font:500 var(--fs,16px)/1.3 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1d2a30}
+.card .cfacts dt{font-weight:800;font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:var(--c2k);padding-top:.15em;white-space:nowrap}
+.card .cfacts dd{margin:0;font-weight:600}
+.card .cfacts small{font-weight:500;opacity:.7;font-size:.86em;white-space:nowrap}
 .card .clbl{font:800 12px Inter,system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--c2)}
 .card .l .clbl{color:#fff}
 .card .cph{display:flex;flex-direction:column;gap:9px}
@@ -286,20 +292,103 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
     var nm=c[0],light2=lum(c[7])>0.45;
     var star='<svg class="cstar" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="13" fill="#e0b25a" stroke="#1d2a30" stroke-width="2"/><path fill="#1d2a30" d="'+starPath(9,3.8)+'"/></svg>';
     var ph='<div class="cph"><i></i><i></i><i></i><i></i></div>';
-    cardBox.innerHTML='<div class="card" style="--c1:'+c[6]+';--c2:'+c[7]+';--ab:'+(light2?c[6]:c[7])+';--on2:'+(light2?'#14202a':'#fff')+'">'+
+    cardBox.innerHTML='<div class="card" style="--c1:'+c[6]+';--c2:'+c[7]+';--c2k:'+(lum(c[7])<0.18?c[7]:c[6])+';--ab:'+(light2?c[6]:c[7])+';--on2:'+(light2?'#14202a':'#fff')+'">'+
       '<div class="ccol l"><div class="cphoto">'+photoSVG()+'<span class="ctag">Photo coming soon</span></div>'+
       '<div class="cinfo"><span class="clbl">Info</span>'+ph+ph+'</div></div>'+
       '<div class="ccol r"><div class="cinfo"><span class="cab">'+id+'</span><h2 class="cname" id="cname">'+nm+'</h2>'+
-      '<div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),480)+'"></div><span class="clbl">Info</span>'+ph+'</div>'+
+      '<div class="crow"><div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),480)+'"></div>'+factsHTML(id)+'</div></div>'+
       '<div class="cmap"><span class="cwait">Loading map…</span></div></div>'+
       '<button class="cx" aria-label="Close">\u00d7</button></div>';
     var fi=cardBox.querySelector('.cflag img');fi.onerror=function(){fi.outerHTML='<div class="cbars" aria-hidden="true"></div>';};
     cardBox.querySelector('.cx').onclick=closeCard;
     cardEl.hidden=false;scaleCard();
     var h=cardBox.querySelector('.cname');h.style.fontFamily='"'+c[4]+'",Georgia,serif';h.style.fontWeight=c[5];
-    fitName(h);loadFont(c,function(){if(cardOn===id)fitName(h);});
+    fitName(h);fitFacts();loadFont(c,function(){if(cardOn===id){fitName(h);fitFacts();}});
     loadMap(id,c,star);
     cardBox.querySelector('.cx').focus();
+  }
+  // Facts. Population: 2020 U.S. Census (states, D.C., Puerto Rico and the Island Areas).
+  // Area: total area incl. water for states and D.C.; land area for territories (their total is mostly ocean).
+  // Joined: order of admission to the Union and year; for D.C. and territories, how and when they became part of the USA.
+  // Cities: the largest cities other than the capital (towns/villages/islands where there are no big cities).
+  var FX={
+   AL:[5024279,52420,22,1819,'Huntsville, Birmingham, Mobile'],
+   AK:[733391,665384,49,1959,'Anchorage, Fairbanks, Wasilla'],
+   AZ:[7151502,113990,48,1912,'Tucson, Mesa, Chandler'],
+   AR:[3011524,53179,25,1836,'Fort Smith, Fayetteville, Springdale'],
+   CA:[39538223,163695,31,1850,'Los Angeles, San Diego, San Jose'],
+   CO:[5773714,104094,38,1876,'Colorado Springs, Aurora, Fort Collins'],
+   CT:[3605944,5543,5,1788,'Bridgeport, Stamford, New Haven'],
+   DE:[989948,2489,1,1787,'Wilmington, Newark, Middletown'],
+   FL:[21538187,65758,27,1845,'Jacksonville, Miami, Tampa'],
+   GA:[10711908,59425,4,1788,'Columbus, Augusta, Macon'],
+   HI:[1455271,10932,50,1959,'Hilo, Pearl City, Kailua'],
+   ID:[1839106,83569,43,1890,'Meridian, Nampa, Idaho Falls'],
+   IL:[12812508,57914,21,1818,'Chicago, Aurora, Joliet'],
+   IN:[6785528,36420,19,1816,'Fort Wayne, Evansville, South Bend'],
+   IA:[3190369,56273,29,1846,'Cedar Rapids, Davenport, Sioux City'],
+   KS:[2937880,82278,34,1861,'Wichita, Overland Park, Kansas City'],
+   KY:[4505836,40408,15,1792,'Louisville, Lexington, Bowling Green'],
+   LA:[4657757,52378,18,1812,'New Orleans, Shreveport, Lafayette'],
+   ME:[1362359,35380,23,1820,'Portland, Lewiston, Bangor'],
+   MD:[6177224,12406,7,1788,'Baltimore, Frederick, Rockville'],
+   MA:[7029917,10554,6,1788,'Worcester, Springfield, Cambridge'],
+   MI:[10077331,96714,26,1837,'Detroit, Grand Rapids, Warren'],
+   MN:[5706494,86936,32,1858,'Minneapolis, Rochester, Bloomington'],
+   MS:[2961279,48432,20,1817,'Gulfport, Southaven, Hattiesburg'],
+   MO:[6154913,69707,24,1821,'Kansas City, St. Louis, Springfield'],
+   MT:[1084225,147040,41,1889,'Billings, Missoula, Great Falls'],
+   NE:[1961504,77348,37,1867,'Omaha, Bellevue, Grand Island'],
+   NV:[3104614,110572,36,1864,'Las Vegas, Henderson, Reno'],
+   NH:[1377529,9349,9,1788,'Manchester, Nashua, Dover'],
+   NJ:[9288994,8723,3,1787,'Newark, Jersey City, Paterson'],
+   NM:[2117522,121590,47,1912,'Albuquerque, Las Cruces, Rio Rancho'],
+   NY:[20201249,54555,11,1788,'New York City, Buffalo, Rochester'],
+   NC:[10439388,53819,12,1789,'Charlotte, Greensboro, Durham'],
+   ND:[779094,70698,39,1889,'Fargo, Grand Forks, Minot'],
+   OH:[11799448,44826,17,1803,'Cleveland, Cincinnati, Toledo'],
+   OK:[3959353,69899,46,1907,'Tulsa, Norman, Broken Arrow'],
+   OR:[4237256,98379,33,1859,'Portland, Eugene, Gresham'],
+   PA:[13002700,46054,2,1787,'Philadelphia, Pittsburgh, Allentown'],
+   RI:[1097379,1545,13,1790,'Warwick, Cranston, Pawtucket'],
+   SC:[5118425,32020,8,1788,'Charleston, North Charleston, Mount Pleasant'],
+   SD:[886667,77116,40,1889,'Sioux Falls, Rapid City, Aberdeen'],
+   TN:[6910840,42144,16,1796,'Memphis, Knoxville, Chattanooga'],
+   TX:[29145505,268596,28,1845,'Houston, San Antonio, Dallas'],
+   UT:[3271616,84897,45,1896,'West Valley City, West Jordan, Provo'],
+   VT:[643077,9616,14,1791,'Burlington, South Burlington, Rutland'],
+   VA:[8631393,42775,10,1788,'Virginia Beach, Chesapeake, Norfolk'],
+   WA:[7705281,71298,42,1889,'Seattle, Spokane, Tacoma'],
+   WV:[1793716,24230,35,1863,'Huntington, Morgantown, Parkersburg'],
+   WI:[5893718,65496,30,1848,'Milwaukee, Green Bay, Kenosha'],
+   WY:[576851,97813,44,1890,'Casper, Laramie, Gillette'],
+   DC:[689545,68,'Capital of the USA',1800,'Georgetown, Capitol Hill, Anacostia','Neighborhoods','The nation’s capital'],
+   PR:[3285874,3424,'U.S. territory',1898,'Bayamón, Carolina, Ponce'],
+   GU:[153836,210,'U.S. territory',1898,'Dededo, Yigo, Tamuning','Villages'],
+   VI:[87146,134,'U.S. territory',1917,'Christiansted, Frederiksted, Cruz Bay','Towns'],
+   MP:[47329,179,'U.S. commonwealth',1978,'Tinian, Rota','Other islands'],
+   AS:[49710,76,'U.S. territory',1900,'Tafuna, Nuʻuuli, Leone','Villages']
+  };
+  var TERR_AREA={PR:1,GU:1,VI:1,MP:1,AS:1};
+  function ord(n){var t=n%100,u=n%10;return n+((t>10&&t<14)?'th':u===1?'st':u===2?'nd':u===3?'rd':'th');}
+  function num(n){return n.toLocaleString('en-US');}
+  function factsHTML(id){
+    var f=FX[id],c=CD[id];if(!f)return '';
+    var km=Math.round(f[1]*2.589988);
+    var joined=typeof f[2]==='number'?ord(f[2])+' state <small>· '+f[3]+'</small>':f[2]+' <small>· since '+f[3]+'</small>';
+    var row=function(k,v){return '<dt>'+k+'</dt><dd>'+v+'</dd>';};
+    return '<dl class="cfacts">'+
+      row('Capital',f[6]||c[1])+
+      row('Population',num(f[0])+' <small>(2020)</small>')+
+      row('Area',num(f[1])+' sq mi <small>('+num(km)+' km²'+(TERR_AREA[id]?', land':'')+')</small>')+
+      row('Joined',joined)+
+      row(f[5]||'Big cities',f[4])+'</dl>';
+  }
+  // Shrink the facts text a little if a long name leaves less room.
+  function fitFacts(){
+    var d=cardBox.querySelector('.cfacts'),box=cardBox.querySelector('.r .cinfo');if(!d||!box)return;
+    var s=17;d.style.setProperty('--fs',s+'px');
+    while(s>12&&box.scrollHeight>box.clientHeight+1){s-=0.5;d.style.setProperty('--fs',s+'px');}
   }
   function closeCard(){cardEl.hidden=true;cardBox.innerHTML='';cardOn=null;}
   cardEl.querySelector('.cbk').onclick=closeCard;
