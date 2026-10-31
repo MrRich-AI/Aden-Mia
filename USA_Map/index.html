@@ -70,14 +70,24 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
 .card .cab{font:900 20px Inter,system-ui,sans-serif;letter-spacing:.4em;color:var(--ab)}
 .card .cname{margin:0;font-size:96px;line-height:1.04;color:var(--c1);overflow-wrap:normal;word-break:keep-all;flex:none}
 .card .r .cinfo{gap:8px}
-.card .crow{flex:1 1 auto;min-height:0;display:flex;gap:20px;align-items:flex-start}
-.card .cflag{flex:0 0 150px;height:100px;display:flex;align-items:flex-start}
-.card .cflag img{max-height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.18);background:#fff}
+.card .crow{flex:1 1 auto;min-height:0;display:flex;gap:22px;align-items:stretch;overflow:hidden}
+.card .cflag{flex:0 0 46%;min-width:0;display:flex;align-items:center;justify-content:center}
+.card .cflag img{width:100%;max-height:100%;object-fit:contain;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 4px 12px rgba(0,0,0,.2);background:#fff}
 .card .cflag .cbars{width:100%;aspect-ratio:3/2;background:linear-gradient(var(--c1) 0 50%,var(--c2) 50% 100%);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
-.card .cfacts{flex:1 1 auto;min-width:0;margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font:500 var(--fs,16px)/1.3 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1d2a30}
-.card .cfacts dt{font-weight:800;font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:var(--c2k);padding-top:.15em;white-space:nowrap}
-.card .cfacts dd{margin:0;font-weight:600}
-.card .cfacts small{font-weight:500;opacity:.7;font-size:.86em;white-space:nowrap}
+.card .cfacts{flex:1 1 auto;min-width:0;margin:0;display:flex;flex-direction:column;justify-content:space-between;font:500 var(--fs,16px)/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1d2a30}
+.card .cfacts div{min-width:0}
+.card .cfacts dt{font-weight:800;font-size:.66em;letter-spacing:.1em;text-transform:uppercase;color:var(--c2k);white-space:nowrap}
+.card .cfacts dd{margin:.06em 0 0;font-weight:650}
+.card .cfacts small{font-weight:500;opacity:.7;font-size:.8em;white-space:nowrap}
+.card .l .cinfo{padding:20px 28px 22px}
+.card .cstory{font:500 var(--fs,16px)/1.42 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff;display:flex;flex-direction:column;gap:.45em}
+.card .cstory .clbl{font-size:.68em;color:var(--onl,#fff);opacity:.85}
+.card .cstory p{margin:0 0 .35em}
+.card .cstory ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.3em 1.1em;font-weight:700;line-height:1.25}
+.card .cstory li{position:relative;padding-left:1.05em}
+.card .cstory li::before{content:"\2605";position:absolute;left:0;top:0;color:var(--c2);font-size:.85em}
+.card .cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;animation:cfade .5s ease}
+a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
 .card .clbl{font:800 12px Inter,system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--c2)}
 .card .l .clbl{color:#fff}
 .card .cph{display:flex;flex-direction:column;gap:9px}
@@ -292,9 +302,9 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
     var nm=c[0],light2=lum(c[7])>0.45;
     var star='<svg class="cstar" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="13" fill="#e0b25a" stroke="#1d2a30" stroke-width="2"/><path fill="#1d2a30" d="'+starPath(9,3.8)+'"/></svg>';
     var ph='<div class="cph"><i></i><i></i><i></i><i></i></div>';
-    cardBox.innerHTML='<div class="card" style="--c1:'+c[6]+';--c2:'+c[7]+';--c2k:'+(lum(c[7])<0.18?c[7]:c[6])+';--ab:'+(light2?c[6]:c[7])+';--on2:'+(light2?'#14202a':'#fff')+'">'+
+    cardBox.innerHTML='<div class="card" style="--c1:'+c[6]+';--c2:'+c[7]+';--c2k:'+(lum(c[7])<0.18?c[7]:c[6])+';--ab:'+(light2?c[6]:c[7])+';--on2:'+(light2?'#14202a':'#fff')+';--onl:'+(lum(c[6])>0.45?'#14202a':'#fff')+'">'+
       '<div class="ccol l"><div class="cphoto">'+photoSVG()+'<span class="ctag">Photo coming soon</span></div>'+
-      '<div class="cinfo"><span class="clbl">Info</span>'+ph+ph+'</div></div>'+
+      '<div class="cinfo">'+storyHTML(id)+'</div></div>'+
       '<div class="ccol r"><div class="cinfo"><span class="cab">'+id+'</span><h2 class="cname" id="cname">'+nm+'</h2>'+
       '<div class="crow"><div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),480)+'"></div>'+factsHTML(id)+'</div></div>'+
       '<div class="cmap"><span class="cwait">Loading map…</span></div></div>'+
@@ -303,8 +313,9 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
     cardBox.querySelector('.cx').onclick=closeCard;
     cardEl.hidden=false;scaleCard();
     var h=cardBox.querySelector('.cname');h.style.fontFamily='"'+c[4]+'",Georgia,serif';h.style.fontWeight=c[5];
-    fitName(h);fitFacts();loadFont(c,function(){if(cardOn===id){fitName(h);fitFacts();}});
-    loadMap(id,c,star);
+    var fitAll=function(){fitName(h);fitFacts();fill(cardBox.querySelector('.cstory'),cardBox.querySelector('.l .cinfo'),12,34);};
+    fitAll();loadFont(c,function(){if(cardOn===id)fitAll();});var fimg=cardBox.querySelector('.cflag img');if(fimg)fimg.addEventListener('load',function(){if(cardOn===id)fitFacts();});
+    loadMap(id,c,star);loadPhoto(id);
     cardBox.querySelector('.cx').focus();
   }
   // Facts. Population: 2020 U.S. Census (states, D.C., Puerto Rico and the Island Areas).
@@ -376,7 +387,7 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
     var f=FX[id],c=CD[id];if(!f)return '';
     var km=Math.round(f[1]*2.589988);
     var joined=typeof f[2]==='number'?ord(f[2])+' state <small>· '+f[3]+'</small>':f[2]+' <small>· since '+f[3]+'</small>';
-    var row=function(k,v){return '<dt>'+k+'</dt><dd>'+v+'</dd>';};
+    var row=function(k,v){return '<div><dt>'+k+'</dt><dd>'+v+'</dd></div>';};
     return '<dl class="cfacts">'+
       row('Capital',f[6]||c[1])+
       row('Population',num(f[0])+' <small>(2020)</small>')+
@@ -385,10 +396,131 @@ body{background:var(--sea);color:var(--ink);font-family:Georgia,"Times New Roman
       row(f[5]||'Big cities',f[4])+'</dl>';
   }
   // Shrink the facts text a little if a long name leaves less room.
-  function fitFacts(){
-    var d=cardBox.querySelector('.cfacts'),box=cardBox.querySelector('.r .cinfo');if(!d||!box)return;
-    var s=17;d.style.setProperty('--fs',s+'px');
-    while(s>12&&box.scrollHeight>box.clientHeight+1){s-=0.5;d.style.setProperty('--fs',s+'px');}
+  function fitFacts(){fill(cardBox.querySelector('.cfacts'),cardBox.querySelector('.crow'),12,34);}
+  // History and famous landmarks for each card (bottom-left section).
+  var HL={
+   AL:['The Creek, Cherokee, Choctaw and Chickasaw peoples lived here first. Alabama became a state in 1819, and cotton farms shaped its early years. In 1955, Rosa Parks refused to give up her bus seat in Montgomery, helping start the Civil Rights Movement. Today, Huntsville helps build rockets for NASA.',['U.S. Space & Rocket Center','Edmund Pettus Bridge','USS Alabama','Gulf Shores beaches']],
+   AK:['Alaska Native peoples have lived here for over 10,000 years. Russia claimed the land in the 1700s, then sold it to the USA in 1867 for $7.2 million. Gold rushes in the 1890s brought new settlers, and Alaska became the 49th state in 1959. It is by far the biggest state.',['Denali','Glacier Bay National Park','Mendenhall Glacier','Kenai Fjords']],
+   AZ:['Ancient Hohokam and Ancestral Puebloan peoples built villages and canals here long ago. Spain and then Mexico ruled the land until the USA gained it in 1848 and 1853. Arizona became the 48th state in 1912, the last of the connected “lower 48.”',['Grand Canyon','Monument Valley','Petrified Forest','Saguaro National Park']],
+   AR:['Quapaw, Caddo and Osage peoples lived here before French explorers arrived in the 1600s. The land became American in the 1803 Louisiana Purchase, and Arkansas became a state in 1836. In 1957, nine brave students called the Little Rock Nine helped end school segregation.',['Hot Springs National Park','Crater of Diamonds State Park','Buffalo National River','Little Rock Central High School']],
+   CA:['Hundreds of Native tribes lived here before Spain built missions along the coast in the 1700s. California was part of Mexico until 1848 — the same year gold was found at Sutter’s Mill. The Gold Rush brought people from around the world, and it became a state in 1850. Today, more people live here than in any other state.',['Golden Gate Bridge','Yosemite National Park','Hollywood Sign','Redwood National Park']],
+   CO:['Ute, Cheyenne and Arapaho peoples lived here, and Ancestral Puebloans built cliff homes at Mesa Verde. The 1858 Pike’s Peak Gold Rush brought thousands of miners. Colorado became a state in 1876, exactly 100 years after the Declaration of Independence, so it is called the “Centennial State.”',['Rocky Mountain National Park','Mesa Verde','Pikes Peak','Garden of the Gods']],
+   CT:['Mohegan, Pequot and other peoples lived here when Dutch and English settlers arrived in the 1630s. Its 1639 Fundamental Orders are often called the first written constitution, so it is nicknamed the “Constitution State.” It was one of the 13 original colonies, and it later became famous for making clocks and submarines.',['Mystic Seaport','Mark Twain House','Yale University','Gillette Castle']],
+   DE:['Lenape and Nanticoke peoples lived here before Dutch, Swedish and English settlers came. On December 7, 1787, Delaware became the very first state to approve the U.S. Constitution, so it is called “The First State.” The du Pont family’s gunpowder mills on the Brandywine River helped it grow.',['Rehoboth Beach','Hagley Museum','Fort Delaware','First State National Historical Park']],
+   FL:['Timucua, Calusa and later Seminole peoples lived here. Spanish explorer Juan Ponce de León named it “La Florida” in 1513, and St. Augustine, founded in 1565, is the oldest city started by Europeans in the mainland USA. Spain gave Florida to the USA in 1821, and it became a state in 1845. Rockets launch to space from Cape Canaveral.',['Everglades National Park','Kennedy Space Center','Walt Disney World','Castillo de San Marcos']],
+   GA:['Creek and Cherokee peoples lived here before James Oglethorpe founded the colony in 1733 — the last of the 13 colonies. In 1838, the Cherokee were forced out on the Trail of Tears. Atlanta was burned in the Civil War and later became the birthplace of Martin Luther King Jr. Georgia is famous for peaches and peanuts.',['Savannah Historic District','Stone Mountain','Martin Luther King Jr. National Historical Park','Okefenokee Swamp']],
+   HI:['Polynesian voyagers sailed thousands of miles to reach these islands over 1,000 years ago. King Kamehameha I united the islands in 1810. Queen Liliʻuokalani was overthrown in 1893, and the USA took over in 1898. Japan’s attack on Pearl Harbor in 1941 pulled the USA into World War II. Hawaii became the 50th state in 1959.',['Pearl Harbor','Hawaiʻi Volcanoes National Park','Diamond Head','Waimea Canyon']],
+   ID:['Shoshone and Nez Perce peoples lived here, and they helped Lewis and Clark cross the mountains in 1805. Settlers came on the Oregon Trail and in gold rushes in the 1860s. Idaho became a state in 1890. Today, it grows about a third of America’s potatoes.',['Shoshone Falls','Craters of the Moon','Sawtooth Mountains','Hells Canyon']],
+   IL:['Around 1050, Mississippian people built Cahokia, the largest city north of Mexico at the time. French explorers arrived in 1673, and Illinois became a state in 1818. Abraham Lincoln lived in Springfield before becoming president. Chicago grew into a giant railroad city and built the world’s first skyscraper in 1885.',['Cloud Gate (“The Bean”)','Willis Tower','Cahokia Mounds','Lincoln Home']],
+   IN:['Miami, Shawnee and Potawatomi peoples lived here. Indiana was part of the Northwest Territory and became the 19th state in 1816. Abraham Lincoln grew up here as a boy. Nobody knows for sure where the nickname “Hoosier” comes from! The Indianapolis 500 car race has been run here since 1911.',['Indianapolis Motor Speedway','Indiana Dunes','Lincoln Boyhood National Memorial','Soldiers’ and Sailors’ Monument']],
+   IA:['Ioway, Meskwaki and Sauk peoples lived here, and the state is named after the Ioway. The land became American in the 1803 Louisiana Purchase, and Iowa became a state in 1846. Its rich, dark soil makes it one of the top farm states — it usually grows the most corn of any state.',['Field of Dreams movie site','Effigy Mounds','Bridges of Madison County','Iowa State Capitol']],
+   KS:['Kansa (Kaw), Osage and Wichita peoples lived here, and the state is named after the Kansa. Before statehood, settlers fought over whether to allow slavery, a time called “Bleeding Kansas.” Kansas joined as a free state in 1861, just before the Civil War. It is called the “Wheat State.”',['Flint Hills','Monument Rocks','Dodge City','Eisenhower Presidential Library']],
+   KY:['Shawnee and Cherokee peoples hunted here. In 1775, Daniel Boone blazed the Wilderness Road through the Cumberland Gap. Kentucky became the 15th state in 1792 — the first west of the Appalachian Mountains. Abraham Lincoln was born here. The Kentucky Derby horse race has been run every year since 1875.',['Churchill Downs','Mammoth Cave','Cumberland Gap','Fort Knox']],
+   LA:['Chitimacha, Choctaw and other peoples lived here. In 1682, France named the land after King Louis XIV. The USA bought it in the 1803 Louisiana Purchase, and Louisiana became a state in 1812. French, Spanish, African and Caribbean cultures mixed here to create Cajun and Creole food, and jazz music was born in New Orleans.',['French Quarter','St. Louis Cathedral','Atchafalaya Basin swamps','Louisiana State Capitol']],
+   ME:['Wabanaki peoples, including the Penobscot and Passamaquoddy, have lived here for thousands of years. Maine was part of Massachusetts until 1820, when it became its own state. It is the most eastern state, so it is one of the first places in the USA to see the sunrise. Maine catches most of America’s lobsters.',['Acadia National Park','Portland Head Light','Mount Katahdin','Bar Harbor']],
+   MD:['Piscataway and Susquehannock peoples lived here before English colonists arrived in 1634. In the War of 1812, the defense of Fort McHenry in Baltimore inspired Francis Scott Key to write “The Star-Spangled Banner.” Maryland gave land to create Washington, D.C. It is famous for blue crabs from the Chesapeake Bay.',['Fort McHenry','Baltimore Inner Harbor','U.S. Naval Academy','Assateague Island wild horses']],
+   MA:['Wampanoag and Massachusett peoples lived here when the Pilgrims landed at Plymouth in 1620. Boston was a center of the American Revolution: the Boston Tea Party happened in 1773, and the first battles were fought at Lexington and Concord in 1775. Harvard, founded in 1636, is the oldest university in the USA.',['Freedom Trail','Plymouth Rock','Cape Cod','Fenway Park']],
+   MI:['Anishinaabe peoples — the Ojibwe, Odawa and Potawatomi — lived here. French fur traders came in the 1600s and founded Detroit in 1701. Michigan became a state in 1837. In the 1900s, Detroit became the “Motor City,” where Henry Ford and others built millions of cars. Michigan touches four of the five Great Lakes.',['Mackinac Bridge','Sleeping Bear Dunes','Henry Ford Museum','Pictured Rocks']],
+   MN:['Dakota and Ojibwe peoples lived here. The name comes from a Dakota word meaning “sky-tinted water.” Minnesota became a state in 1858, and many settlers came from Norway, Sweden and Germany. It is called the “Land of 10,000 Lakes,” but it actually has more than 11,000!',['Boundary Waters','Lake Itasca (start of the Mississippi)','Split Rock Lighthouse','Mall of America']],
+   MS:['Choctaw, Chickasaw and Natchez peoples lived along the river. The state is named after the Mississippi River, from an Ojibwe word meaning “great river.” It became the 20th state in 1817. Mississippi was a key place in the Civil Rights Movement, and it is the birthplace of the blues and of Elvis Presley.',['Vicksburg National Military Park','Natchez Trace Parkway','Elvis Presley Birthplace','Gulf Islands National Seashore']],
+   MO:['Osage and Missouria peoples lived here, and the state is named after the Missouria. The land came with the 1803 Louisiana Purchase, and Lewis and Clark started their journey west near St. Louis. Missouri became a state in 1821, and St. Louis became the “Gateway to the West.” Mark Twain grew up in Hannibal.',['Gateway Arch','Mark Twain Boyhood Home','Lake of the Ozarks','Harry S. Truman Library']],
+   MT:['Blackfeet, Crow, Cheyenne and other nations lived here. Lewis and Clark crossed Montana in 1805. In 1876, Lakota and Cheyenne warriors defeated Custer’s army at the Battle of the Little Bighorn. Gold and copper mining brought settlers, and Montana became a state in 1889. Its name means “mountainous” in Spanish.',['Glacier National Park','Little Bighorn Battlefield','Going-to-the-Sun Road','Yellowstone’s north entrance']],
+   NE:['Pawnee, Omaha, Ponca and Lakota peoples lived here. Pioneers crossed Nebraska on the Oregon, California and Mormon Trails, using Chimney Rock as a guide. The 1862 Homestead Act brought farmers, and the first homestead claim was made here. Nebraska became a state in 1867. It is the only state with a one-house legislature.',['Chimney Rock','Scotts Bluff','Carhenge','Homestead National Historical Park']],
+   NV:['Paiute, Shoshone and Washoe peoples lived here. The land became American in 1848. Finding silver at the Comstock Lode in 1859 made Nevada boom, and it became a state in 1864, during the Civil War — so its motto is “Battle Born.” Hoover Dam was finished in 1936, and Las Vegas grew into a world-famous entertainment city.',['Las Vegas Strip','Hoover Dam','Lake Tahoe','Red Rock Canyon']],
+   NH:['Abenaki and Pennacook peoples lived here before English settlers arrived in 1623. In January 1776, New Hampshire became the first colony to set up its own government, free from Britain. In 1788, it was the 9th state to approve the Constitution, which made the Constitution official. Its motto is “Live Free or Die.”',['Mount Washington','White Mountains','Franconia Notch','Kancamagus Highway']],
+   NJ:['Lenape people lived here before Dutch, Swedish and English settlers came in the 1600s. Many Revolutionary War battles were fought here, including Trenton, after George Washington crossed the Delaware River in 1776. Thomas Edison invented the phonograph at his Menlo Park lab. New Jersey is the most crowded state for its size.',['Atlantic City Boardwalk','Liberty State Park','Cape May','Thomas Edison National Historical Park']],
+   NM:['Pueblo peoples have lived here for over 1,000 years, and people still live in Taos Pueblo today. Spain founded Santa Fe around 1610, making it the oldest state capital in the USA. New Mexico became American in 1848 and the 47th state in 1912. The first atomic bomb was tested here in 1945.',['White Sands National Park','Carlsbad Caverns','Taos Pueblo','Albuquerque Balloon Fiesta']],
+   NY:['Haudenosaunee (Iroquois) and Lenape peoples lived here. The Dutch founded New Amsterdam in the 1620s, and the English renamed it New York in 1664. New York City was the first U.S. capital, where George Washington became president in 1789. Millions of immigrants arrived through Ellis Island. Today, NYC is the biggest city in the USA.',['Statue of Liberty','Niagara Falls','Empire State Building','Central Park']],
+   NC:['Cherokee, Tuscarora and other peoples lived here. In 1587, English settlers started a colony on Roanoke Island and then mysteriously vanished — it is called the “Lost Colony.” North Carolina became the 12th state in 1789. In 1903, the Wright brothers made the world’s first powered airplane flight near Kitty Hawk.',['Wright Brothers National Memorial','Blue Ridge Parkway','Biltmore Estate','Cape Hatteras Lighthouse']],
+   ND:['Mandan, Hidatsa, Arikara and Lakota peoples lived here. Lewis and Clark spent the winter of 1804–05 with the Mandan, where they met Sacagawea. North Dakota became a state on the same day as South Dakota in 1889. Theodore Roosevelt was a rancher in its badlands, which are now a national park named after him.',['Theodore Roosevelt National Park','International Peace Garden','Fort Mandan','Enchanted Highway']],
+   OH:['Shawnee, Miami and other peoples lived here, along with ancient mound builders. In 1803, Ohio became the first state made from the Northwest Territory. Seven U.S. presidents were born in Ohio. It is a home of flight: the Wright brothers were from Dayton, and astronauts Neil Armstrong and John Glenn were from Ohio.',['Rock & Roll Hall of Fame','Cedar Point','Serpent Mound','National Museum of the U.S. Air Force']],
+   OK:['Wichita, Caddo and Osage peoples lived here. In the 1830s, the U.S. government forced the Cherokee, Choctaw, Chickasaw, Creek and Seminole nations to move here on the Trail of Tears. In 1889, a land run opened the area to settlers, and Oklahoma became a state in 1907. Its name comes from Choctaw words meaning “red people.”',['Wichita Mountains','Route 66','National Cowboy & Western Heritage Museum','Oklahoma City National Memorial']],
+   OR:['Chinook, Klamath and many other peoples lived here. Lewis and Clark reached the Pacific Ocean at the mouth of the Columbia River in 1805. In the 1840s, thousands of pioneers traveled the 2,000-mile Oregon Trail to settle here. Oregon became a state in 1859. Crater Lake is the deepest lake in the USA.',['Crater Lake','Multnomah Falls','Haystack Rock','Mount Hood']],
+   PA:['Lenape and Susquehannock peoples lived here. William Penn founded the colony in 1681 as a place of religious freedom. The Declaration of Independence (1776) and the Constitution (1787) were both signed in Philadelphia. The Battle of Gettysburg in 1863 was a turning point of the Civil War. Philadelphia was the U.S. capital for 10 years.',['Liberty Bell','Independence Hall','Gettysburg Battlefield','Fallingwater']],
+   RI:['Narragansett and Wampanoag peoples lived here. Roger Williams founded Providence in 1636 as a place where people could worship freely. Rhode Island was the first colony to declare independence, in May 1776, but the last to approve the Constitution, in 1790. It is the smallest state. Slater Mill helped start America’s Industrial Revolution.',['The Breakers (Newport Mansions)','Cliff Walk','WaterFire Providence','Block Island']],
+   SC:['Catawba, Cherokee and Yamasee peoples lived here. English colonists founded Charles Town, now Charleston, in 1670. Many Revolutionary War battles were fought here. In 1860, South Carolina was the first state to leave the Union, and the Civil War began at Fort Sumter in 1861. Its flag shows a palmetto tree and a crescent moon.',['Fort Sumter','Rainbow Row','Myrtle Beach','Congaree National Park']],
+   SD:['Lakota, Dakota and Arikara peoples lived here, and the Black Hills are sacred to the Lakota. Gold was found in the Black Hills in 1874, bringing a rush of miners. South Dakota became a state in 1889. Mount Rushmore, carved from 1927 to 1941, shows four presidents, and the Crazy Horse Memorial is being carved nearby.',['Mount Rushmore','Badlands National Park','Crazy Horse Memorial','Wind Cave']],
+   TN:['Cherokee, Chickasaw and Shawnee peoples lived here. Tennessee became the 16th state in 1796. So many people volunteered to fight in the War of 1812 that it became the “Volunteer State.” Nashville is “Music City,” the home of country music, and Memphis is a birthplace of the blues and rock ’n’ roll.',['Great Smoky Mountains','Graceland','Grand Ole Opry','National Civil Rights Museum']],
+   TX:['Caddo, Comanche and Apache peoples lived here. Spain and then Mexico ruled Texas until 1836, when Texans won independence after the Battle of the Alamo and the Battle of San Jacinto. For nine years Texas was its own country, the Republic of Texas, before joining the USA in 1845. That is why its flag has a lone star.',['The Alamo','Space Center Houston','Big Bend National Park','San Antonio River Walk']],
+   UT:['Ute, Paiute, Shoshone and Navajo peoples lived here. In 1847, Mormon pioneers led by Brigham Young arrived and founded Salt Lake City. The first railroad across the country was finished at Promontory Summit in 1869 with a golden spike. Utah became a state in 1896. It has five national parks, called the “Mighty Five.”',['Arches National Park','Zion National Park','Bryce Canyon','Great Salt Lake']],
+   VT:['Abenaki people lived here. Vermont declared itself an independent country in 1777 and stayed that way until it joined as the 14th state in 1791 — the first after the original 13. Its name comes from French words meaning “green mountain.” Vermont makes more maple syrup than any other state.',['Green Mountains','Lake Champlain','Ben & Jerry’s Factory','Shelburne Farms']],
+   VA:['Powhatan peoples lived here when English settlers founded Jamestown in 1607, the first lasting English settlement in America. Virginia is called the “Mother of Presidents” because eight presidents were born here, including George Washington and Thomas Jefferson. The Revolutionary War’s last big battle was at Yorktown in 1781.',['Mount Vernon','Monticello','Colonial Williamsburg','Shenandoah National Park']],
+   WA:['Coast Salish, Yakama, Nez Perce and many other peoples lived here. Captain George Vancouver explored the coast in 1792, and Lewis and Clark arrived in 1805. Washington became a state in 1889 and is the only state named after a president. Today, it is home to Boeing, Microsoft and Amazon.',['Space Needle','Mount Rainier','Olympic National Park','Pike Place Market']],
+   WV:['Shawnee, Cherokee and other peoples hunted here. West Virginia was part of Virginia until the Civil War. When Virginia left the Union, the western counties broke away and became a new state in 1863. Coal mining shaped its history. It is called the “Mountain State” because it lies completely in the Appalachian Mountains.',['New River Gorge Bridge','Harpers Ferry','Seneca Rocks','The Greenbrier']],
+   WI:['Ho-Chunk, Menominee and Ojibwe peoples lived here. French explorer Jean Nicolet arrived in 1634. Wisconsin became the 30th state in 1848. Many settlers from Germany and Scandinavia started dairy farms, so it is called “America’s Dairyland” — and it makes more cheese than any other state.',['Lambeau Field','Door County','Wisconsin Dells','Apostle Islands']],
+   WY:['Shoshone, Arapaho, Crow and Lakota peoples lived here. In 1869, Wyoming became the first place in the USA to give women the right to vote, earning the nickname “Equality State.” It became a state in 1890. Yellowstone, created in 1872, was the world’s first national park. Fewer people live in Wyoming than in any other state.',['Yellowstone National Park','Old Faithful','Grand Teton National Park','Devils Tower']],
+   DC:['In 1790, Congress chose land along the Potomac River for a new capital, and George Washington picked the spot. Pierre L’Enfant planned its wide streets, and the government moved here in 1800. British troops burned the White House and the Capitol in 1814. D.C. is not part of any state — it is a special federal district.',['The White House','U.S. Capitol','Lincoln Memorial','Washington Monument']],
+   PR:['The Taíno people called the island Borikén. Christopher Columbus arrived in 1493, and Spain ruled for 400 years, building forts like El Morro. The USA gained Puerto Rico in 1898 after the Spanish–American War, and Puerto Ricans became U.S. citizens in 1917. Today, its official languages are Spanish and English.',['Old San Juan','El Morro','El Yunque Rainforest','Bioluminescent Bay, Vieques']],
+   GU:['The Chamorro people have lived on Guam for about 3,500 years. Ferdinand Magellan landed here in 1521, and Spain ruled for over 200 years. The USA took Guam in 1898. Japan occupied it during World War II until U.S. forces took it back in 1944. Because it is so far west, its motto is “Where America’s Day Begins.”',['Tumon Bay','Two Lovers Point','War in the Pacific National Historical Park','Fort Soledad']],
+   VI:['Taíno and Carib peoples lived here before Columbus arrived in 1493. Denmark ruled the islands for over 200 years, and enslaved Africans worked on sugar plantations until they won their freedom in 1848. The USA bought the islands from Denmark in 1917 for $25 million. People drive on the left side of the road here!',['Trunk Bay','Magens Bay','Virgin Islands National Park','Christiansted']],
+   MP:['Chamorro and later Carolinian peoples lived on these islands. They were ruled by Spain, then Germany, then Japan. In 1944, U.S. forces captured Saipan and Tinian in World War II battles, and the planes that dropped atomic bombs on Japan took off from Tinian. In 1978, the islands became a U.S. commonwealth.',['Managaha Island','Banzai Cliff','The Grotto','North Field, Tinian']],
+   AS:['Polynesian people settled the Samoan islands about 3,000 years ago. In 1900, local chiefs signed the island of Tutuila over to the USA, and the Manuʻa Islands followed in 1904. Pago Pago has one of the deepest harbors in the South Pacific. It is the only U.S. territory with people living south of the equator.',['National Park of American Samoa','Pago Pago Harbor','Ofu Beach','Rainmaker Mountain']]
+  };
+  // Photo: the lead photo of a Wikipedia article (first article that has a photo wins). Iconic scenes first; landmarks only where a state is best known for one.
+  var PH={
+   AL:['U.S. Space & Rocket Center','Gulf Shores, Alabama'],AK:['Denali','Kenai Fjords National Park'],AZ:['Grand Canyon','Monument Valley'],
+   AR:['Buffalo National River','Hot Springs National Park'],CA:['Golden Gate Bridge','Yosemite Valley'],CO:['Maroon Bells','Rocky Mountain National Park'],
+   CT:['Mystic Seaport','Mystic, Connecticut'],DE:['Rehoboth Beach, Delaware','Cape Henlopen State Park'],FL:['Everglades National Park','Miami Beach, Florida'],
+   GA:['Forsyth Park','Savannah Historic District'],HI:['Waikiki','Diamond Head, Hawaii'],ID:['Shoshone Falls','Sawtooth Range (Idaho)'],
+   IL:['Chicago','Cloud Gate'],IN:['Indianapolis Motor Speedway','Indianapolis 500'],IA:['Iowa State Fair','Loess Hills'],
+   KS:['Flint Hills','Monument Rocks (Kansas)'],KY:['Kentucky Derby','Churchill Downs'],LA:['French Quarter','Bourbon Street'],
+   ME:['Portland Head Light','Acadia National Park'],MD:['Callinectes sapidus','Chesapeake Bay'],MA:['Cape Cod','Boston Harbor'],
+   MI:['Mackinac Bridge','Sleeping Bear Dunes National Lakeshore'],MN:['Boundary Waters Canoe Area Wilderness','Lake Itasca'],MS:['Mississippi River','Natchez Trace Parkway'],
+   MO:['Gateway Arch','Lake of the Ozarks'],MT:['Glacier National Park (U.S.)','Going-to-the-Sun Road'],NE:['Chimney Rock National Historic Site','Scotts Bluff National Monument'],
+   NV:['Las Vegas Strip','Red Rock Canyon National Conservation Area'],NH:['White Mountains (New Hampshire)','Mount Washington'],NJ:['Atlantic City Boardwalk','Jersey Shore'],
+   NM:['Albuquerque International Balloon Fiesta','White Sands National Park'],NY:['Statue of Liberty','Times Square'],NC:['Outer Banks','Cape Hatteras Light'],
+   ND:['Theodore Roosevelt National Park','Badlands'],OH:['Cedar Point','Rock and Roll Hall of Fame'],OK:['Wichita Mountains','Wichita Mountains Wildlife Refuge'],
+   OR:['Crater Lake','Multnomah Falls'],PA:['Liberty Bell','Independence Hall'],RI:['Newport, Rhode Island','The Breakers'],
+   SC:['Rainbow Row','Charleston, South Carolina'],SD:['Mount Rushmore','Badlands National Park'],TN:['Great Smoky Mountains National Park','Great Smoky Mountains'],
+   TX:['Lupinus texensis','Texas Hill Country'],UT:['Delicate Arch','Arches National Park'],VT:['Maple syrup','Green Mountains'],
+   VA:['Shenandoah National Park','Blue Ridge Parkway'],WA:['Mount Rainier','Space Needle'],WV:['New River Gorge Bridge','New River Gorge National Park and Preserve'],
+   WI:['Door County, Wisconsin','Lambeau Field'],WY:['Old Faithful','Grand Teton National Park'],DC:['United States Capitol','Lincoln Memorial'],
+   PR:['Old San Juan','El Yunque National Forest'],GU:['Tumon, Guam','Two Lovers Point'],VI:['Trunk Bay','Magens Bay'],
+   MP:['Managaha','Saipan'],AS:['National Park of American Samoa','Pago Pago Harbor']
+  };
+  var phCache={};
+  function storyHTML(id){
+    var s=HL[id];if(!s)return '';
+    return '<div class="cstory"><span class="clbl">History</span><p>'+s[0]+'</p><span class="clbl">Famous landmarks</span><ul>'+
+      s[1].map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
+  }
+  // Finds the article's lead photo (JPEG only, so maps and logos are skipped) and fills the photo section with it.
+  function loadPhoto(id){
+    var box=cardBox.querySelector('.cphoto'),list=(PH[id]||[]).slice();
+    var show=function(r){
+      if(!r||cardOn!==id)return;
+      var img=new Image();
+      img.onload=function(){
+        if(cardOn!==id)return;
+        img.className='cimg';img.alt=r.title;box.querySelector('svg')&&box.querySelector('svg').remove();
+        var tag=box.querySelector('.ctag');box.insertBefore(img,tag);
+        tag.outerHTML='<a class="ctag" href="'+r.page+'" target="_blank" rel="noopener">Photo: Wikimedia Commons</a>';
+      };
+      img.src=r.src;
+    };
+    if(phCache[id]!==undefined){show(phCache[id]);return;}
+    var next=function(){
+      var t=list.shift();if(!t){phCache[id]=null;return;}
+      fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_')))
+        .then(function(r){return r.ok?r.json():null;})
+        .then(function(j){
+          var o=j&&j.originalimage,th=j&&j.thumbnail;
+          if(!o||!/\.(jpe?g)$/i.test(o.source)){next();return;}
+          var src=o.width>1400&&th?th.source.replace(/\/\d+px-/,'/1200px-'):o.source;
+          var file=decodeURIComponent(o.source.split('/').pop());
+          var r={src:src,title:j.title,page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(file)};
+          phCache[id]=r;show(r);
+        })
+        .catch(next);
+    };
+    next();
+  }
+  // Grow or shrink a section's text so it fills its space exactly.
+  function fill(el,box,lo,hi){
+    if(!el||!box)return;
+    var fits=function(s){el.style.setProperty('--fs',s+'px');return box.scrollHeight<=box.clientHeight+1&&box.scrollWidth<=box.clientWidth+1;};
+    for(var i=0;i<14;i++){var m=(lo+hi)/2;if(fits(m))lo=m;else hi=m;}
+    el.style.setProperty('--fs',Math.floor(lo*2)/2+'px');
   }
   function closeCard(){cardEl.hidden=true;cardBox.innerHTML='';cardOn=null;}
   cardEl.querySelector('.cbk').onclick=closeCard;
