@@ -484,7 +484,7 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
     return '<div class="cstory"><span class="clbl">History</span><p>'+s[0]+'</p><span class="clbl">Famous landmarks</span><ul>'+
       s[1].map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
   }
-  // Finds the article's lead photo (JPEG only, so maps and logos are skipped) and fills the photo section with it.
+  // Finds the article's main photo (JPEG only, so maps and logos are skipped) and fills the photo section with it.
   function loadPhoto(id){
     var box=cardBox.querySelector('.cphoto'),list=(PH[id]||[]).slice();
     var show=function(r){
@@ -503,18 +503,15 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
     if(phCache[id]!==undefined){show(phCache[id]);return;}
     var next=function(){
       var t=list.shift();if(!t){phCache[id]=null;return;}
-      fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_')))
-        .then(function(r){return r.ok?r.json():null;})
+      // Same Wikipedia API the relief maps use: the article's main image file name.
+      fetch('https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=name&redirects=1&format=json&formatversion=2&origin=*&titles='+encodeURIComponent(t))
+        .then(function(r){return r.json();})
         .then(function(j){
-          var o=j&&j.originalimage,th=j&&j.thumbnail;
-          if(!o||!/\.(jpe?g)$/i.test(o.source)){next();return;}
-          var src=[];
-          if(th&&o.width>1280)src.push(th.source.replace(/\/\d+px-/,'/1280px-'));
-          if(th&&o.width>960)src.push(th.source.replace(/\/\d+px-/,'/960px-'));
-          if(o.width<=3000)src.push(o.source);
-          if(th)src.push(th.source);
-          var file=decodeURIComponent(o.source.split('/').pop());
-          var r={src:src,title:j.title,page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(file)};
+          var pg=j&&j.query&&j.query.pages&&j.query.pages[0],file=pg&&pg.pageimage;
+          if(!file||!/\.(jpe?g)$/i.test(file)){next();return;}
+          var fn=encodeURIComponent(file.replace(/ /g,'_'));
+          var r={src:[fp(file,1280),fp(file,960),'https://commons.wikimedia.org/wiki/Special:FilePath/'+fn,'https://en.wikipedia.org/wiki/Special:FilePath/'+fn+'?width=1280'],
+            title:pg.title,page:'https://commons.wikimedia.org/wiki/File:'+fn};
           phCache[id]=r;show(r);
         })
         .catch(next);
