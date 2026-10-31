@@ -306,10 +306,10 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
       '<div class="ccol l"><div class="cphoto">'+photoSVG()+'<span class="ctag">Photo coming soon</span></div>'+
       '<div class="cinfo">'+storyHTML(id)+'</div></div>'+
       '<div class="ccol r"><div class="cinfo"><span class="cab">'+id+'</span><h2 class="cname" id="cname">'+nm+'</h2>'+
-      '<div class="crow"><div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),480)+'"></div>'+factsHTML(id)+'</div></div>'+
+      '<div class="crow"><div class="cflag"><img alt="Flag of '+nm+'" src="'+fp(FLAGS[id]||('Flag of '+nm+'.svg'),500)+'"></div>'+factsHTML(id)+'</div></div>'+
       '<div class="cmap"><span class="cwait">Loading map…</span></div></div>'+
       '<button class="cx" aria-label="Close">\u00d7</button></div>';
-    var fi=cardBox.querySelector('.cflag img');fi.onerror=function(){fi.outerHTML='<div class="cbars" aria-hidden="true"></div>';};
+    var fi=cardBox.querySelector('.cflag img'),ft=0;fi.onerror=function(){if(!ft++){fi.src=fi.src.replace(/\?width=\d+$/,'');}else fi.outerHTML='<div class="cbars" aria-hidden="true"></div>';};
     cardBox.querySelector('.cx').onclick=closeCard;
     cardEl.hidden=false;scaleCard();
     var h=cardBox.querySelector('.cname');h.style.fontFamily='"'+c[4]+'",Georgia,serif';h.style.fontWeight=c[5];
@@ -496,7 +496,9 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
         var tag=box.querySelector('.ctag');box.insertBefore(img,tag);
         tag.outerHTML='<a class="ctag" href="'+r.page+'" target="_blank" rel="noopener">Photo: Wikimedia Commons</a>';
       };
-      img.src=r.src;
+      var srcs=r.src.slice();
+      img.onerror=function(){if(srcs.length)img.src=srcs.shift();};
+      img.src=srcs.shift();
     };
     if(phCache[id]!==undefined){show(phCache[id]);return;}
     var next=function(){
@@ -506,7 +508,11 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
         .then(function(j){
           var o=j&&j.originalimage,th=j&&j.thumbnail;
           if(!o||!/\.(jpe?g)$/i.test(o.source)){next();return;}
-          var src=o.width>1400&&th?th.source.replace(/\/\d+px-/,'/1200px-'):o.source;
+          var src=[];
+          if(th&&o.width>1280)src.push(th.source.replace(/\/\d+px-/,'/1280px-'));
+          if(th&&o.width>960)src.push(th.source.replace(/\/\d+px-/,'/960px-'));
+          if(o.width<=3000)src.push(o.source);
+          if(th)src.push(th.source);
           var file=decodeURIComponent(o.source.split('/').pop());
           var r={src:src,title:j.title,page:'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(file)};
           phCache[id]=r;show(r);
@@ -557,8 +563,9 @@ a.ctag{text-decoration:none}a.ctag:hover{text-decoration:underline}
         var p=place(md,c[2],c[3]);
         if(p)w.insertAdjacentHTML('beforeend','<div style="position:absolute;left:'+p[0]+'%;top:'+p[1]+'%">'+star.replace('class="cstar"','class="cstar" style="left:0;top:0"')+'<span class="ccap'+(p[0]>72?' lft':'')+'">'+c[1]+'</span></div>');
       };
-      img.onerror=function(){if(!tried++)img.src='https://en.wikipedia.org/wiki/Special:FilePath/'+encodeURIComponent(file.replace(/ /g,'_'))+'?width=1000';else{clearTimeout(t);fail();}};
-      img.src=fp(file,1000);
+      var fn=encodeURIComponent(file.replace(/ /g,'_')),srcs=[fp(file,1280),fp(file,960),'https://commons.wikimedia.org/wiki/Special:FilePath/'+fn,'https://en.wikipedia.org/wiki/Special:FilePath/'+fn+'?width=1280','https://en.wikipedia.org/wiki/Special:FilePath/'+fn];
+      img.onerror=function(){if(srcs.length)img.src=srcs.shift();else{clearTimeout(t);fail();}};
+      img.src=srcs.shift();
     };
     if(mdCache[id]!==undefined){got(mdCache[id]);return;}
     var titles=mods.map(function(m){return 'Module:Location map/data/'+m;});
